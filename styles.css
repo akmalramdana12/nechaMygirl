@@ -389,10 +389,12 @@ button{ font-family:inherit; cursor:pointer; }
 .sound-toggle svg{ width:18px; height:18px; stroke:var(--plum); fill:none; }
 
 .petal{
-  position:fixed; top:-40px; z-index:2;
-  font-size: 20px;
+  position:fixed; top:-60px; z-index:2;
+  width: 34px; height:auto;
+  display:block;
   will-change: transform, opacity;
   pointer-events:none;
+  filter: drop-shadow(0 3px 6px rgba(74,46,53,0.20));
   animation-name: fallPetal;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
@@ -549,8 +551,10 @@ button{ font-family:inherit; cursor:pointer; }
 .accept-burst.ab-scatter .burst-cover{ opacity:0; }
 .burst-petal{
   position:absolute; top:50%; left:50%;
-  font-size:22px;
+  width:34px; height:auto;
+  display:block;
   opacity:0;
+  filter: drop-shadow(0 3px 6px rgba(74,46,53,0.20));
   transform: translate(-50%,-50%) scale(.3) rotate(0deg);
   transition: transform .85s cubic-bezier(.15,.8,.25,1), opacity .5s ease;
 }

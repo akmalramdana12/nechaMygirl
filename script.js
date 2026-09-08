@@ -210,21 +210,29 @@ btnAccept.addEventListener('click', () => {
   });
 });
 
-// ---- 4. Bunga berjatuhan ----
-const flowers = ['🌸','🌺','🌷','💮','🌼'];
+// ---- 4. Bunga berjatuhan (pakai foto bunga asli dari folder image/) ----
+const FLOWER_IMAGES = [
+  'image/bunga-1.png','image/bunga-2.png','image/bunga-3.png','image/bunga-4.png',
+  'image/bunga-5.png','image/bunga-6.png','image/bunga-7.png','image/bunga-8.png',
+  'image/bunga-9.png','image/bunga-10.png','image/bunga-11.png'
+];
+function randomFlowerImage(){
+  return FLOWER_IMAGES[Math.floor(Math.random() * FLOWER_IMAGES.length)];
+}
 let petalInterval = null;
 function startPetals(){
   if (petalInterval) return;
   const spawn = () => {
-    const p = document.createElement('div');
+    const p = document.createElement('img');
     p.className = 'petal';
-    p.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+    p.src = randomFlowerImage();
+    p.alt = '';
     const left = Math.random() * 100;
     const duration = 7 + Math.random() * 6;
     const drift = (Math.random() * 120 - 60) + 'px';
     const spin = (Math.random() * 360 - 180) + 'deg';
     p.style.left = left + 'vw';
-    p.style.fontSize = (16 + Math.random() * 14) + 'px';
+    p.style.width = (26 + Math.random() * 26) + 'px';
     p.style.setProperty('--drift', drift);
     p.style.setProperty('--spin', spin);
     p.style.animationDuration = duration + 's';
@@ -512,14 +520,15 @@ function playAcceptBurst(callback){
 
   requestAnimationFrame(() => burst.classList.add('ab-cover'));
 
-  const flowers = ['🌸', '🌺', '🌷', '💮', '🌼', '🌹'];
   setTimeout(() => {
     for (let i = 0; i < 22; i++) {
-      const p = document.createElement('span');
+      const p = document.createElement('img');
       p.className = 'burst-petal';
-      p.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+      p.src = randomFlowerImage();
+      p.alt = '';
       const angle = Math.random() * Math.PI * 2;
       const dist = 42 + Math.random() * 46;
+      p.style.width = (28 + Math.random() * 22) + 'px';
       p.style.setProperty('--tx', Math.cos(angle) * dist + 'vmax');
       p.style.setProperty('--ty', Math.sin(angle) * dist + 'vmax');
       p.style.setProperty('--rot', (Math.random() * 300 - 150) + 'deg');
