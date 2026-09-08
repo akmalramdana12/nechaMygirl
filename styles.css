@@ -413,14 +413,48 @@ button{ font-family:inherit; cursor:pointer; }
    animasi foto profil, animasi bunga saat "Terima", menu Photoshoot.
    ============================================================ */
 
-/* ---------- TOMBOL SUARA GLOBAL (musik dari file sendiri) ---------- */
-.sound-toggle{
-  opacity:0;
-  pointer-events:none;
-  transition: opacity .4s ease, transform .2s ease;
+/* ---------- MUSIC PLAYER (gaya Spotify, di atas buku) ---------- */
+#music-player{
+  position:fixed;
+  top: clamp(14px, 3vh, 22px);
+  left:50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: min(340px, 88vw);
+  display:flex; align-items:center; gap:10px;
+  background: rgba(255,252,247,0.94);
+  backdrop-filter: blur(10px);
+  border:1px solid var(--line);
+  border-radius: 16px;
+  padding: 9px 12px;
+  box-shadow: 0 12px 30px rgba(74,46,53,0.14);
+  opacity:1; pointer-events:auto;
+  transition: opacity .35s ease, transform .35s ease;
 }
-.sound-toggle.st-visible{ opacity:1; pointer-events:auto; }
-.sound-toggle:hover{ transform: translateY(-2px); }
+#music-player.mp-hidden{ opacity:0; pointer-events:none; transform: translateX(-50%) translateY(-14px); }
+.mp-art{
+  width:38px; height:38px; border-radius:10px; flex-shrink:0;
+  background: linear-gradient(150deg, var(--rose), var(--gold));
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28);
+}
+.mp-art svg{ width:16px; height:16px; fill:#fff; }
+.mp-art.mp-spin{ animation: mpSpin 3.4s linear infinite; }
+@keyframes mpSpin{ to{ transform: rotate(360deg); } }
+.mp-info{ flex:1; min-width:0; }
+.mp-title{ font-size:12px; font-weight:500; color:var(--plum); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mp-artist{ font-size:10.5px; color:var(--plum-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.mp-progress{ position:relative; height:3px; background:var(--line); border-radius:3px; margin-top:6px; cursor:pointer; }
+.mp-progress-fill{ position:absolute; inset:0; width:0%; background: var(--rose-dark); border-radius:3px; pointer-events:none; }
+.mp-time{ display:flex; justify-content:space-between; font-size:9px; color:var(--plum-soft); opacity:.75; margin-top:3px; letter-spacing:.3px; }
+.mp-controls{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.mp-btn{ width:28px; height:28px; border-radius:50%; border:1px solid var(--line); background:var(--paper); display:flex; align-items:center; justify-content:center; transition: transform .15s ease; flex-shrink:0; }
+.mp-btn:hover{ transform: translateY(-1px); }
+.mp-btn svg{ width:12px; height:12px; fill:var(--plum); }
+.mp-btn.mp-play{ background: var(--rose-dark); border-color:var(--rose-dark); }
+.mp-btn.mp-play svg{ fill:#FBF3EC; }
+#mp-file{ display:none; }
+@media (max-width:380px){ #music-player{ padding:8px 9px; gap:8px; } .mp-art{ width:32px; height:32px; } }
 
 /* ---------- GARIS SCRAPBOOK — hanya di bawah teks halaman buku ---------- */
 .page-text{ position:relative; padding-bottom:22px; }
@@ -439,47 +473,66 @@ button{ font-family:inherit; cursor:pointer; }
   opacity:.6;
 }
 
-/* ---------- FOTO PROFIL — animasi dari tengah ke pojok kiri bawah ---------- */
-.photo-dock{
+/* ---------- FOTO PROFIL MELAYANG ----------
+   Tahap 1: muncul di tengah, ukuran sedang, melayang (3 detik)
+   Tahap 2: menyebar jadi 5 (1 di tengah kecil + 4 klon menyebar acak, semua melayang)
+   Tahap 3: menyatu kembali ke tengah
+   Tahap 4: berpindah ke pojok kanan bawah, menetap di sana sambil tetap melayang
+   Catatan: tanpa border sama sekali (sesuai permintaan). */
+.photo-dock,
+.pd-clone{
   position:fixed; top:50%; left:50%;
-  width:10px; height:10px;
-  transform: translate(-50%,-50%) scale(0);
+  width:0; height:0;
+  transform: translate(-50%,-50%);
   opacity:0;
   z-index:55; pointer-events:none;
   border-radius:50%;
   overflow:hidden;
   box-shadow: 0 10px 26px rgba(74,46,53,0.28);
-  border: 0 solid var(--paper);
   transition:
-    width .68s cubic-bezier(.6,.05,.2,1),
-    height .68s cubic-bezier(.6,.05,.2,1),
-    top .75s cubic-bezier(.5,.05,.2,1),
-    left .75s cubic-bezier(.5,.05,.2,1),
-    border-radius .6s ease,
-    border-width .5s ease,
-    transform .5s ease,
-    opacity .3s ease;
+    width .6s cubic-bezier(.5,.05,.2,1),
+    height .6s cubic-bezier(.5,.05,.2,1),
+    top .85s cubic-bezier(.4,.1,.2,1),
+    left .85s cubic-bezier(.4,.1,.2,1),
+    border-radius .5s ease,
+    opacity .4s ease;
 }
-.photo-dock img{ width:100%; height:100%; object-fit:cover; display:block; }
-.photo-dock.pd-cover{
-  width:220vmax; height:220vmax;
-  border-radius:0;
-  transform: translate(-50%,-50%) scale(1);
+.photo-dock img,
+.pd-clone img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+/* Tahap 1 — muncul di tengah, ukuran sedang */
+.photo-dock.pd-center{
+  width: clamp(110px, 22vw, 160px);
+  height: clamp(110px, 22vw, 160px);
   opacity:1;
 }
+/* Tahap 2 — mengecil saat menyebar */
+.photo-dock.pd-small{
+  width:60px; height:60px;
+}
+/* klon yang menyebar acak */
+.pd-clone{ width:56px; height:56px; }
+.pd-clone.pd-show{ opacity:1; }
+
+/* Animasi melayang lembut, dipasang di elemen <img> supaya tidak bentrok
+   dengan transisi posisi pada elemen pembungkusnya */
+.photo-dock img.pd-float,
+.pd-clone img.pd-float{
+  animation: pdFloat var(--fd, 3.2s) ease-in-out infinite;
+  animation-delay: var(--fdelay, 0s);
+}
+@keyframes pdFloat{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-7px);} }
+
+/* Tahap 4 — menetap di pojok kanan bawah, tetap melayang */
 .photo-dock.pd-docked{
   top: calc(100svh - 76px);
-  left:76px;
-  width:104px; height:104px;
-  border-radius:16px;
-  border-width:4px;
-  transform: translate(-50%,-50%) scale(1);
+  left: calc(100vw - 76px);
+  width:100px; height:100px;
+  border-radius:18px;
   opacity:1;
 }
-.photo-dock.pd-float img{ animation: pdFloat 3.2s ease-in-out infinite; }
-@keyframes pdFloat{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-7px);} }
 @media (max-width:380px){
-  .photo-dock.pd-docked{ width:84px; height:84px; left:64px; top:calc(100svh - 64px); }
+  .photo-dock.pd-docked{ width:80px; height:80px; top:calc(100svh - 60px); left:calc(100vw - 60px); }
 }
 
 /* ---------- ANIMASI BUNGA SAAT TOMBOL "TERIMA" ---------- */
@@ -530,15 +583,21 @@ button{ font-family:inherit; cursor:pointer; }
   transition: opacity .3s ease;
 }
 .photo-loading.show{ opacity:1; pointer-events:auto; }
-.loading-flower{ font-size:44px; animation: loadingSpin 1.6s ease-in-out infinite; }
-@keyframes loadingSpin{ 0%,100%{ transform: scale(1) rotate(0deg);} 50%{ transform: scale(1.25) rotate(180deg);} }
+.loading-spinner{
+  width:46px; height:46px;
+  border-radius:50%;
+  border:3px solid var(--line);
+  border-top-color: var(--rose-dark);
+  animation: loadingSpin 0.9s linear infinite;
+}
+@keyframes loadingSpin{ to{ transform: rotate(360deg); } }
 .loading-text{ font-size:13px; letter-spacing:1.5px; color: var(--plum-soft); }
 .loading-bar{ width:180px; height:4px; border-radius:4px; background: var(--line); overflow:hidden; }
 .loading-bar-fill{ height:100%; width:0%; background: var(--rose-dark); border-radius:4px; transition: width 5s linear; }
 
 /* ---------- HALAMAN / MENU PHOTOSHOOT ---------- */
 #screen-photoshoot{ align-items:flex-start; padding:0; overflow-y:auto; }
-.ps-wrap{ width:100%; max-width:440px; margin:0 auto; min-height:100%; background:var(--paper); padding: 28px 22px 54px; }
+.ps-wrap{ position:relative; width:100%; max-width:440px; margin:0 auto; min-height:100%; background:var(--paper); padding: 28px 22px 54px; overflow:hidden; }
 .ps-header{ text-align:center; margin-bottom:18px; }
 .ps-title{ font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:600; font-size:24px; }
 .ps-sub{ font-size:12px; color:var(--plum-soft); margin-top:4px; letter-spacing:.3px; }
@@ -576,60 +635,6 @@ button{ font-family:inherit; cursor:pointer; }
 .ps-back-mini{ width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--paper); display:flex; align-items:center; justify-content:center; }
 .ps-back-mini svg{ width:17px; height:17px; stroke:var(--plum); fill:none; }
 
-.ps-filter[data-filter="vintage90"] .ps-filter-swatch{
-  background: linear-gradient(150deg, #C9AE7C, #8A6A46);
-  filter: sepia(.55) contrast(1.15) saturate(1.35) brightness(.98);
-}
-
-/* ---------- STIKER LUCU DI HEADER PHOTOSHOOT ---------- */
-.ps-header{ position:relative; }
-.ps-sticker{
-  position:absolute;
-  font-size:20px;
-  opacity:.9;
-  animation: stickerFloat 3.4s ease-in-out infinite;
-  pointer-events:none;
-}
-.ps-sticker-1{ top:-6px; left:8%; animation-delay:0s; }
-.ps-sticker-2{ top:-10px; right:10%; animation-delay:.6s; font-size:18px; }
-.ps-sticker-3{ top:14px; right:26%; animation-delay:1.1s; font-size:16px; }
-@keyframes stickerFloat{
-  0%,100%{ transform: translateY(0) rotate(-4deg); }
-  50%{ transform: translateY(-6px) rotate(4deg); }
-}
-
-/* ---------- STIKER LUCU DI SETIAP HALAMAN BUKU / SLIDE ---------- */
-.page-sticker{
-  position:absolute;
-  font-size: clamp(20px, 4vw, 28px);
-  z-index:2;
-  opacity:.85;
-  pointer-events:none;
-  animation: stickerFloat 3.8s ease-in-out infinite;
-}
-
-/* ---------- PARTIKEL PEMANIS YANG HALUS (khusus halaman buku) ---------- */
-.sparkle{
-  position:fixed;
-  z-index:1;
-  pointer-events:none;
-  will-change: transform, opacity;
-  color: var(--gold);
-  font-size: 10px;
-  animation-name: sparkleDrift;
-  animation-timing-function: ease-in-out;
-  animation-fill-mode: forwards;
-}
-@keyframes sparkleDrift{
-  0%{ transform: translate(0,0) scale(.4) rotate(0deg); opacity:0; }
-  15%{ opacity:.85; }
-  50%{ opacity:.55; }
-  100%{ transform: translate(var(--sdrift), var(--srise)) scale(1) rotate(var(--sspin)); opacity:0; }
-}
-@media (prefers-reduced-motion: reduce){
-  .sparkle, .page-sticker, .ps-sticker{ animation: none !important; }
-}
-
 .ps-result{ display:none; }
 .ps-result.show{ display:block; }
 .ps-strip-frame{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px; box-shadow: 0 12px 28px rgba(74,46,53,0.14); position:relative; }
@@ -645,3 +650,52 @@ button{ font-family:inherit; cursor:pointer; }
 .ps-result-actions button{ flex:1; padding:13px 0; border-radius:30px; font-size:13px; letter-spacing:.3px; border:1px solid transparent; }
 #ps-download{ background:var(--rose-dark); color:#fff; box-shadow:0 10px 22px rgba(168,92,104,.3); }
 #ps-retake{ background:transparent; border-color:var(--line); color:var(--plum-soft); }
+
+/* ============================================================
+   STIKER LUCU PEMANIS — pengganti gaya "icon Pinterest" tanpa
+   menarik gambar berhak cipta dari luar: memakai emoji dekoratif
+   kecil yang ditaruh acak di tiap halaman buku & halaman photoshoot.
+   ============================================================ */
+.page-sticker{
+  position:absolute;
+  font-size:20px;
+  line-height:1;
+  pointer-events:none;
+  opacity:.85;
+  filter: drop-shadow(0 3px 6px rgba(74,46,53,0.18));
+  z-index:1;
+  animation: stickerDrift 4.5s ease-in-out infinite;
+  animation-delay: var(--sdelay, 0s);
+}
+@keyframes stickerDrift{ 0%,100%{ transform: translateY(0) rotate(var(--srot, 0deg)); } 50%{ transform: translateY(-5px) rotate(var(--srot, 0deg)); } }
+
+.ps-sticker{
+  position:absolute;
+  font-size:19px;
+  pointer-events:none;
+  opacity:.8;
+  z-index:1;
+  animation: stickerDrift 4s ease-in-out infinite;
+  animation-delay: var(--sdelay, 0s);
+}
+
+/* ============================================================
+   TAMPILAN LEBIH LUCU UNTUK HALAMAN PHOTOSHOOT
+   ============================================================ */
+.ps-title{ position:relative; }
+.ps-stage{ border:3px solid var(--paper); box-shadow: 0 12px 28px rgba(74,46,53,0.18), 0 0 0 1px var(--line); }
+.ps-filter-swatch{ box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
+
+/* ---------- RESPONSIF UNTUK DESKTOP / LAPTOP ---------- */
+@media (min-width:900px){
+  .book{ --book-w: clamp(360px, 34vw, 460px); }
+  #screen-cover{ }
+  .ps-wrap{ max-width:460px; border-radius:22px; box-shadow: 0 24px 60px rgba(74,46,53,0.16); margin-top: 3vh; margin-bottom: 3vh; min-height:auto; max-height:94vh; overflow-y:auto; }
+  #screen-photoshoot{ align-items:center; }
+  .profile-card{ box-shadow: 0 24px 60px rgba(74,46,53,0.16); }
+  #music-player{ width:min(380px, 92vw); }
+  .photo-dock.pd-docked{ width:112px; height:112px; top: calc(100vh - 96px); left: calc(100vw - 96px); }
+}
+@media (min-width:1280px){
+  .page-text{ font-size: clamp(22px, 1.6vw, 30px); }
+}

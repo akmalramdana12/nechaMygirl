@@ -11,17 +11,32 @@
 </head>
 <body>
 
-<!-- ============== MUSIK LATAR (file sendiri dari folder /music) ============== -->
-<!-- Taruh file musikmu di folder "music" di sebelah index.html ini,
-     lalu ganti nama file di bawah sesuai nama file musikmu. -->
-<audio id="bg-music" loop preload="auto">
-  <source src="music/lagu.mp3" type="audio/mpeg">
-</audio>
-
-<!-- ============== TOMBOL SUARA (mengambang, muncul begitu musik mulai) ============== -->
-<button class="sound-toggle" id="sound-toggle" aria-label="Bisukan / nyalakan musik" type="button">
-  <svg id="sound-icon" viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4z"/></svg>
-</button>
+<!-- ============== MUSIC PLAYER (di atas buku, gaya Spotify) ============== -->
+<div id="music-player">
+  <div class="mp-art" id="mp-art">
+    <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  </div>
+  <div class="mp-info">
+    <div class="mp-title" id="mp-title">Belum ada lagu</div>
+    <div class="mp-artist" id="mp-artist">ketuk + untuk menambahkan lagu</div>
+    <div class="mp-progress" id="mp-progress">
+      <div class="mp-progress-fill" id="mp-progress-fill"></div>
+    </div>
+    <div class="mp-time">
+      <span id="mp-cur">0:00</span>
+      <span id="mp-dur">0:00</span>
+    </div>
+  </div>
+  <div class="mp-controls">
+    <button class="mp-btn" id="mp-add" aria-label="Tambah lagu" type="button">
+      <svg viewBox="0 0 24 24"><path d="M11 5h2v14h-2z"/><path d="M5 11h14v2H5z"/></svg>
+    </button>
+    <button class="mp-btn mp-play" id="mp-play" aria-label="Putar / jeda" type="button">
+      <svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>
+    </button>
+    <input type="file" id="mp-file" accept="audio/*">
+  </div>
+</div>
 
 
 <!-- ============== 1. COVER BUKU ============== -->
@@ -94,6 +109,9 @@
 
 <!-- ============== 4. FINAL ============== -->
 <section id="screen-final" class="screen">
+  <button class="sound-toggle" id="sound-toggle" aria-label="Bisukan / nyalakan musik">
+    <svg id="sound-icon" viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4z"/></svg>
+  </button>
   <div class="final-inner">
     <div class="final-text" id="final-text">Yeyy, diterima<br>makasih sayangku cantik 🤍</div>
     <div class="final-sub">— T A M A T —</div>
@@ -110,7 +128,7 @@
 
 <!-- ============== LOADING PHOTOSHOOT (5 detik) ============== -->
 <div class="photo-loading" id="photo-loading">
-  <div class="loading-flower">📸</div>
+  <div class="loading-spinner" aria-hidden="true"></div>
   <div class="loading-text">MENYIAPKAN KAMERA…</div>
   <div class="loading-bar"><div class="loading-bar-fill" id="loading-bar-fill"></div></div>
 </div>
@@ -119,9 +137,6 @@
 <section id="screen-photoshoot" class="screen">
   <div class="ps-wrap">
     <div class="ps-header">
-      <span class="ps-sticker ps-sticker-1" aria-hidden="true">📸</span>
-      <span class="ps-sticker ps-sticker-2" aria-hidden="true">🎀</span>
-      <span class="ps-sticker ps-sticker-3" aria-hidden="true">✨</span>
       <div class="ps-title">Photoshoot Kita</div>
       <div class="ps-sub">pilih gaya kamu, lalu ambil beberapa foto manis</div>
     </div>
@@ -167,9 +182,6 @@
         </button>
         <button class="ps-filter" data-filter="warm" type="button">
           <span class="ps-filter-swatch"></span><span class="ps-filter-name">Hangat</span>
-        </button>
-        <button class="ps-filter" data-filter="vintage90" type="button">
-          <span class="ps-filter-swatch"></span><span class="ps-filter-name">Vintage 90'</span>
         </button>
       </div>
 
