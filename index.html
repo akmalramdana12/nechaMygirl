@@ -6,13 +6,14 @@
 <title>Untukmu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Slackey&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="monster-chat.css">
 </head>
 <body>
 
 <!-- ============== MUSIC PLAYER (di atas buku, gaya Spotify) ============== -->
-<div id="music-player">
+<div id="music-player" class="mp-hidden">
   <div class="mp-art" id="mp-art">
     <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
   </div>
@@ -39,8 +40,58 @@
 </div>
 
 
+<!-- ============== 0. KENALAN DULU (monster lucu, 10 pertanyaan) ============== -->
+<section id="screen-monster" class="screen active">
+  <div class="mc-wrap">
+    <div class="mc-monster-stage">
+      <div class="mc-monster" id="mc-monster" aria-hidden="true">
+        <svg viewBox="0 0 200 200" width="100%" height="100%">
+          <ellipse class="mc-shadow" cx="100" cy="182" rx="46" ry="8"/>
+          <g class="mc-antenna-l"><line x1="66" y1="46" x2="58" y2="20" stroke="#8F4A5C" stroke-width="4" stroke-linecap="round"/><circle cx="58" cy="16" r="7" fill="#F2B33D"/></g>
+          <g class="mc-antenna-r"><line x1="134" y1="46" x2="142" y2="20" stroke="#8F4A5C" stroke-width="4" stroke-linecap="round"/><circle cx="142" cy="16" r="7" fill="#F2B33D"/></g>
+          <g class="mc-body-group">
+            <ellipse cx="100" cy="112" rx="70" ry="62" fill="url(#mcBodyGrad)"/>
+            <ellipse cx="76" cy="150" rx="10" ry="6" fill="#8F4A5C" opacity=".5"/>
+            <ellipse cx="124" cy="150" rx="10" ry="6" fill="#8F4A5C" opacity=".5"/>
+            <circle class="mc-spot" cx="54" cy="96" r="5" fill="#fff" opacity=".35"/>
+            <circle class="mc-spot" cx="142" cy="130" r="4" fill="#fff" opacity=".3"/>
+            <g class="mc-eye-l"><circle cx="78" cy="100" r="17" fill="#fff"/><circle cx="81" cy="102" r="9" fill="#3A2530"/><circle cx="84" cy="98" r="3" fill="#fff"/></g>
+            <g class="mc-eye-r"><circle cx="122" cy="100" r="17" fill="#fff"/><circle cx="125" cy="102" r="9" fill="#3A2530"/><circle cx="128" cy="98" r="3" fill="#fff"/></g>
+            <path class="mc-mouth" d="M84 130 Q100 146 116 130" fill="none" stroke="#3A2530" stroke-width="4" stroke-linecap="round"/>
+            <ellipse class="mc-blush-l" cx="62" cy="118" rx="8" ry="5" fill="#D998A6" opacity=".55"/>
+            <ellipse class="mc-blush-r" cx="138" cy="118" rx="8" ry="5" fill="#D998A6" opacity=".55"/>
+          </g>
+          <defs>
+            <linearGradient id="mcBodyGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#E7A6B4"/>
+              <stop offset="100%" stop-color="#CDA55E"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <div class="mc-dialogue-box" id="mc-dialogue-box">
+      <div class="mc-typing-dots" id="mc-typing-dots" hidden><span></span><span></span><span></span></div>
+      <div class="mc-text" id="mc-text"></div>
+      <div class="mc-answer-wrap" id="mc-answer-wrap" hidden>
+        <input type="text" id="mc-answer-input" class="mc-answer-input" placeholder="ketik jawabanmu di sini..." autocomplete="off">
+      </div>
+      <div class="mc-buttons" id="mc-buttons"></div>
+    </div>
+  </div>
+
+  <div class="mc-toast" id="mc-toast" role="status" aria-live="polite"></div>
+
+  <div class="photo-loading" id="mc-loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">MENYIAPKAN BUKUNYA...</div>
+    <div class="loading-bar"><div class="loading-bar-fill" id="mc-loading-bar-fill"></div></div>
+  </div>
+</section>
+
 <!-- ============== 1. COVER BUKU ============== -->
-<section id="screen-cover" class="screen active">
+<section id="screen-cover" class="screen">
   <div>
     <button class="book" id="book" aria-label="Buka buku">
       <div class="cover-front">
@@ -200,5 +251,6 @@
 
 
 <script src="script.js"></script>
+<script src="monster-chat.js"></script>
 </body>
 </html>
