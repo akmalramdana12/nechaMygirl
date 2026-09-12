@@ -111,6 +111,27 @@ button{ font-family:inherit; cursor:pointer; }
   color: rgba(245,233,218,0.75);
   text-align:center;
 }
+.cover-dedication{
+  display:flex; flex-direction:column; gap:3px;
+  align-items:center;
+  margin: 2px 0 4px;
+  padding: 10px 18px;
+  border-top: 1px solid rgba(205,165,94,0.35);
+  border-bottom: 1px solid rgba(205,165,94,0.35);
+}
+.cover-dedication-line{
+  font-size:12.5px;
+  letter-spacing:.4px;
+  color: rgba(245,233,218,0.9);
+}
+.cover-dedication-line strong{
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic;
+  font-weight:600;
+  font-size:15px;
+  color:#F5E9DA;
+  margin-left:5px;
+}
 .cover-hint{
   position:absolute; bottom:-42px; left:0; right:0;
   text-align:center;
@@ -249,22 +270,24 @@ button{ font-family:inherit; cursor:pointer; }
 
 .nav-btn{
   position:fixed;
-  bottom: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  bottom: auto;
   width:52px; height:52px;
   border-radius:50%;
-  border:1px solid var(--line);
-  background: rgba(255,253,249,0.92);
-  backdrop-filter: blur(6px);
+  border:none;
+  background: transparent;
+  box-shadow: none;
   display:flex; align-items:center; justify-content:center;
-  box-shadow: var(--shadow-1);
-  transition: transform .22s var(--ease-silk), box-shadow .22s ease, opacity .2s ease;
+  transition: background .18s ease, opacity .2s ease;
   z-index: 20;
 }
-.nav-btn:hover{ transform: translateY(-3px); box-shadow: var(--shadow-2); }
-.nav-btn:disabled{ opacity:.25; cursor:default; transform:none; box-shadow:none; }
-.nav-btn svg{ width:18px; height:18px; stroke: var(--plum); }
-#btn-prev{ left: 26px; }
-#btn-next{ right: 26px; }
+.nav-btn:hover{ background: rgba(0,0,0,0.05); }
+.nav-btn:active{ background: rgba(0,0,0,0.08); }
+.nav-btn:disabled{ opacity:.25; cursor:default; background:transparent; }
+.nav-btn svg{ width:20px; height:20px; stroke: var(--plum); }
+#btn-prev{ left: clamp(6px, 3vw, 26px); }
+#btn-next{ right: clamp(6px, 3vw, 26px); }
 
 @media (prefers-reduced-motion: reduce){
   .page.flip-out-next, .page.flip-out-prev{ animation: none !important; transform: rotateY(0deg) !important; opacity:0; }
@@ -274,9 +297,9 @@ button{ font-family:inherit; cursor:pointer; }
   .book{ height: clamp(220px, 60svh, 340px); }
   .cover-front{ padding: 18px; gap:12px; }
   .book-block{ height: clamp(220px, 60svh, 340px); }
-  .nav-btn{ width:44px; height:44px; bottom:14px; }
-  #btn-prev{ left:14px; }
-  #btn-next{ right:14px; }
+  .nav-btn{ width:44px; height:44px; }
+  #btn-prev{ left:6px; }
+  #btn-next{ right:6px; }
   #btn-tekan{ bottom:22px; }
 }
 @media (max-width: 380px){
@@ -302,12 +325,16 @@ button{ font-family:inherit; cursor:pointer; }
 #btn-tekan:hover{ transform:translateX(-50%) translateY(-3px); box-shadow: 0 18px 36px rgba(173,98,116,0.48); }
 
 /* ---------- 3. PROFIL ---------- */
-#screen-profile{ align-items:flex-start; padding:0; overflow-y:auto; }
+#screen-profile{ align-items:flex-start; padding:0; overflow-y:auto; position:relative; }
 .profile-card{
   width:100%; max-width:420px; margin: 0 auto;
   min-height:100%;
   background: var(--paper);
+  opacity:0; transform: scale(.94);
+  pointer-events:none;
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2,.9,.24,1);
 }
+.profile-card.show{ opacity:1; transform: scale(1); pointer-events:auto; }
 .profile-banner{
   height:176px; width:100%;
   background:
@@ -345,6 +372,33 @@ button{ font-family:inherit; cursor:pointer; }
   margin-top:16px; font-size:14px; line-height:1.65; color: var(--plum-soft);
 }
 .profile-divider{ width:40px; height:1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 32px auto; opacity:.7; }
+
+/* Layout horizontal khusus desktop/layar lebar */
+@media (min-width:900px){
+  #screen-profile{ align-items:center; justify-content:center; }
+  .profile-card{
+    max-width: 780px;
+    min-height:auto;
+    display:flex;
+    flex-direction:row;
+    align-items:stretch;
+    border-radius: 24px;
+    overflow:hidden;
+    box-shadow: var(--shadow-3);
+  }
+  .profile-banner{
+    position:relative;
+    width: 280px; height:auto; flex-shrink:0;
+  }
+  .profile-photo-wrap{
+    position:absolute; top:50%; left:50%; margin:0;
+    transform:translate(-50%,-50%);
+  }
+  .profile-body{ flex:1; text-align:left; padding: 40px 46px; }
+  .profile-name, .profile-username, .profile-bio, .ask-heading{ text-align:left; }
+  .profile-stats{ justify-content:flex-start; }
+  .profile-divider{ margin: 30px 0; }
+}
 .ask-heading{
   font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:600;
   font-size: clamp(22px, 5vw, 28px);
@@ -438,36 +492,43 @@ button{ font-family:inherit; cursor:pointer; }
    ANIMASI BUNGA SAAT "TERIMA", MENU PHOTOSHOOT.
    ============================================================ */
 
-/* ---------- MUSIC PLAYER (gaya Spotify, di atas buku) ---------- */
+/* ---------- MUSIC PLAYER (gaya Spotify, di atas buku) — versi upgrade ---------- */
 #music-player{
   position:fixed;
   top: clamp(14px, 3vh, 22px);
   left:50%;
   transform: translateX(-50%);
   z-index: 40;
-  width: min(340px, 88vw);
-  display:flex; align-items:center; gap:11px;
-  background: rgba(255,253,249,0.9);
-  backdrop-filter: blur(14px) saturate(1.4);
-  border:1px solid rgba(205,165,94,0.22);
-  border-radius: 18px;
-  padding: 10px 13px;
-  box-shadow: var(--shadow-1);
+  width: min(346px, 88vw);
+  display:flex; align-items:center; gap:10px;
+  background: rgba(255,253,249,0.92);
+  backdrop-filter: blur(16px) saturate(1.5);
+  border:1px solid rgba(205,165,94,0.28);
+  border-radius: 20px;
+  padding: 9px 14px 9px 10px;
+  box-shadow: var(--shadow-2), inset 0 0 0 1px rgba(255,255,255,0.5);
   opacity:1; pointer-events:auto;
-  transition: opacity .35s ease, transform .35s var(--ease-silk);
+  transition: opacity .4s ease, transform .4s cubic-bezier(.2,.9,.25,1);
+  cursor:pointer;
 }
-#music-player.mp-hidden{ opacity:0; pointer-events:none; transform: translateX(-50%) translateY(-16px); }
+#music-player.mp-hidden{ opacity:0; pointer-events:none; transform: translateX(-50%) translateY(-22px) scale(.96); }
+.mp-chevron{
+  width:22px; height:22px; flex-shrink:0; border:none; background:none;
+  display:flex; align-items:center; justify-content:center; padding:0;
+  color: var(--plum-soft);
+}
+.mp-chevron svg{ width:14px; height:14px; stroke: var(--plum-soft); fill:none; }
 .mp-art{
-  width:38px; height:38px; border-radius:11px; flex-shrink:0;
+  width:40px; height:40px; border-radius:12px; flex-shrink:0;
   background: linear-gradient(150deg, var(--rose), var(--gold));
   display:flex; align-items:center; justify-content:center;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35), 0 4px 10px rgba(173,98,116,0.25);
 }
-.mp-art svg{ width:16px; height:16px; fill:#fff; }
+.mp-art svg{ width:17px; height:17px; fill:#fff; }
 .mp-art.mp-spin{ animation: mpSpin 3.4s linear infinite; }
 @keyframes mpSpin{ to{ transform: rotate(360deg); } }
 .mp-info{ flex:1; min-width:0; }
-.mp-title{ font-size:12px; font-weight:500; color:var(--plum); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mp-title{ font-size:12px; font-weight:600; color:var(--plum); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .mp-artist{ font-size:10.5px; color:var(--plum-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
 .mp-progress{ position:relative; height:3px; background:var(--line); border-radius:3px; margin-top:7px; cursor:pointer; }
 .mp-progress-fill{ position:absolute; inset:0; width:0%; background: linear-gradient(90deg, var(--rose-dark), var(--gold)); border-radius:3px; pointer-events:none; }
@@ -478,8 +539,48 @@ button{ font-family:inherit; cursor:pointer; }
 .mp-btn svg{ width:12px; height:12px; fill:var(--plum); }
 .mp-btn.mp-play{ background: linear-gradient(135deg, var(--rose-dark), #8F4A5C); border-color:var(--rose-dark); }
 .mp-btn.mp-play svg{ fill:#FBF0EA; }
-#mp-file{ display:none; }
-@media (max-width:380px){ #music-player{ padding:8px 10px; gap:8px; } .mp-art{ width:32px; height:32px; } }
+@media (max-width:380px){ #music-player{ padding:8px 10px; gap:8px; } .mp-art{ width:34px; height:34px; } }
+
+/* ---------- NOW PLAYING — popup ala iPhone, muncul dari bawah ---------- */
+.mp-sheet-overlay{
+  position:fixed; inset:0; z-index:70;
+  background: rgba(30,16,20,0.4);
+  backdrop-filter: blur(8px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition: opacity .3s ease;
+}
+.mp-sheet-overlay.show{ opacity:1; pointer-events:auto; }
+.mp-sheet{
+  width:min(420px, 92vw);
+  background: linear-gradient(165deg, #FFFDF9, #FCEEE3);
+  border-radius: 30px 30px 0 0;
+  padding: 14px 30px clamp(28px, 5vh, 40px);
+  box-shadow: 0 -24px 60px rgba(0,0,0,0.32);
+  transform: translateY(100%);
+  transition: transform .48s cubic-bezier(.2,.9,.22,1);
+  text-align:center;
+}
+.mp-sheet-overlay.show .mp-sheet{ transform: translateY(0); }
+.mp-sheet-handle{ width:42px; height:5px; border-radius:3px; background: var(--line); margin: 0 auto 22px; }
+.mp-sheet-art{
+  width:min(200px, 52vw); height:min(200px, 52vw); margin:0 auto 20px;
+  border-radius:26px;
+  background: linear-gradient(150deg, var(--rose), var(--gold));
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: var(--shadow-2), inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+.mp-sheet-art svg{ width:30%; height:30%; fill:#fff; }
+.mp-sheet-art.mp-spin svg{ animation: mpSpin 3.4s linear infinite; }
+.mp-sheet-title{ font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:600; font-size:23px; margin-bottom:4px; }
+.mp-sheet-artist{ font-size:13px; color:var(--plum-soft); margin-bottom:18px; }
+.mp-sheet-progress{ height:4px; margin-bottom:6px; }
+.mp-sheet-controls{ display:flex; align-items:center; justify-content:center; gap:22px; margin-top:22px; }
+.mp-sheet-btn{ width:52px; height:52px; border-radius:50%; border:none; background:var(--paper); box-shadow: var(--shadow-1); display:flex; align-items:center; justify-content:center; transition: transform .18s var(--ease-silk); }
+.mp-sheet-btn:hover{ transform: translateY(-2px); }
+.mp-sheet-btn svg{ width:19px; height:19px; fill: var(--plum); }
+.mp-sheet-btn.mp-sheet-play{ width:66px; height:66px; background: linear-gradient(135deg, var(--rose-dark), #8F4A5C); box-shadow: 0 12px 26px rgba(173,98,116,0.4); }
+.mp-sheet-btn.mp-sheet-play svg{ width:22px; height:22px; fill:#fff; }
 
 /* ---------- GARIS SCRAPBOOK — hanya di bawah teks halaman buku ---------- */
 .page-text{ position:relative; padding-bottom:24px; }
@@ -498,67 +599,73 @@ button{ font-family:inherit; cursor:pointer; }
   opacity:.65;
 }
 
-/* ---------- FOTO PROFIL MELAYANG ----------
-   Tahap 1: muncul di tengah, ukuran sedang, melayang (3 detik)
-   Tahap 2: menyebar jadi 5 (1 di tengah kecil + 4 klon menyebar acak, semua melayang)
-   Tahap 3: menyatu kembali ke tengah
-   Tahap 4: berpindah ke pojok kanan bawah, menetap di sana sambil tetap melayang
-   Catatan: tanpa border sama sekali (sesuai permintaan). */
-.photo-dock,
-.pd-clone{
-  position:fixed; top:50%; left:50%;
-  width:0; height:0;
-  transform: translate(-50%,-50%);
-  opacity:0;
-  z-index:55; pointer-events:none;
-  border-radius:50%;
-  overflow:hidden;
+/* ---------- INTRO HALAMAN PROFIL (balon + bunga) ----------
+   Tahap 1: halaman kosong/polos.
+   Tahap 2: balon (membawa foto image/cantik.png) terbang dari bawah ke tengah.
+   Tahap 3: balon meletus di tengah, foto menghilang.
+   Tahap 4: bunga (image/bunga-1..11.png) menyebar dari sedikit hingga menutup
+            seluruh layar, bertahan 1 detik.
+   Tahap 5: bunga menghilang, kartu profil muncul, foto cantik.png muncul
+            melayang di pojok kiri bawah secara permanen. */
+.prof-balloon{
+  position:fixed; left:50%; bottom:-40vh; z-index:56;
+  transform: translateX(-50%);
+  display:flex; flex-direction:column; align-items:center;
+  pointer-events:none;
+  transition: bottom 1.7s cubic-bezier(.25,.7,.3,1), transform .6s ease, opacity .5s ease;
+}
+.prof-balloon.rise{ bottom: 42vh; animation: profBalloonSway 2.6s ease-in-out infinite; }
+.prof-balloon.pop{ opacity:0; transform: translateX(-50%) scale(1.5); transition: opacity .3s ease, transform .3s ease; }
+@keyframes profBalloonSway{ 0%,100%{ margin-left:0; } 50%{ margin-left:14px; } }
+.prof-balloon-svg{ width: clamp(80px, 20vw, 120px); filter: drop-shadow(0 10px 16px rgba(58,37,48,0.25)); }
+.prof-balloon-photo{
+  width: clamp(56px, 14vw, 78px); height: clamp(56px, 14vw, 78px);
+  border-radius:14px; overflow:hidden; margin-top:-6px;
+  border: 4px solid #fff; box-shadow: var(--shadow-1);
+  transform: rotate(-4deg);
+  background: var(--paper);
+}
+.prof-balloon-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.prof-pop-burst{
+  position:fixed; z-index:57; top:42vh; left:50%;
+  width:14px; height:14px; border-radius:50%;
+  transform: translate(-50%,-50%) scale(0);
+  background: radial-gradient(circle, var(--rose) 0%, var(--rose-dark) 60%, var(--plum) 100%);
+  opacity:0; pointer-events:none;
+  transition: transform .4s cubic-bezier(.2,.8,.3,1.2), opacity .3s ease;
+}
+.prof-pop-burst.show{ opacity:.9; transform: translate(-50%,-50%) scale(30); }
+.prof-pop-burst.hide{ opacity:0; }
+
+.prof-flower{
+  position:fixed; z-index:58;
+  width: 46px; height:auto;
+  opacity:0; pointer-events:none;
+  transform: scale(.3) rotate(0deg);
+  transition: opacity .45s ease, transform .45s cubic-bezier(.2,.9,.3,1.1);
+  filter: drop-shadow(0 4px 10px rgba(58,37,48,0.22));
+}
+.prof-flower.show{ opacity:1; transform: scale(1) rotate(var(--frot, 0deg)); }
+.prof-flower.fade{ opacity:0; transform: scale(.6) rotate(var(--frot, 0deg)); transition: opacity .6s ease, transform .6s ease; }
+
+.prof-corner-photo{
+  position:fixed; z-index:15;
+  bottom: clamp(14px, 4vh, 30px); left: clamp(14px, 4vw, 30px);
+  width: clamp(78px, 16vw, 108px); height: clamp(78px, 16vw, 108px);
+  border-radius:20px; overflow:hidden;
   box-shadow: var(--shadow-2);
-  transition:
-    width .6s var(--ease-silk),
-    height .6s var(--ease-silk),
-    top .85s cubic-bezier(.4,.1,.2,1),
-    left .85s cubic-bezier(.4,.1,.2,1),
-    border-radius .5s ease,
-    opacity .4s ease;
+  opacity:0; transform: translateY(24px) scale(.85);
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.24,1);
+  pointer-events:none;
 }
-.photo-dock img,
-.pd-clone img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-/* Tahap 1 — muncul di tengah, ukuran sedang */
-.photo-dock.pd-center{
-  width: clamp(110px, 22vw, 160px);
-  height: clamp(110px, 22vw, 160px);
-  opacity:1;
+.prof-corner-photo.show{ opacity:1; transform: translateY(0) scale(1); }
+.prof-corner-photo img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  animation: profCornerFloat 3.4s ease-in-out infinite;
 }
-/* Tahap 2 — mengecil saat menyebar */
-.photo-dock.pd-small{
-  width:60px; height:60px;
-}
-/* klon yang menyebar acak */
-.pd-clone{ width:56px; height:56px; }
-.pd-clone.pd-show{ opacity:1; }
-
-/* Animasi melayang lembut, dipasang di elemen <img> supaya tidak bentrok
-   dengan transisi posisi pada elemen pembungkusnya */
-.photo-dock img.pd-float,
-.pd-clone img.pd-float{
-  animation: pdFloat var(--fd, 3.2s) ease-in-out infinite;
-  animation-delay: var(--fdelay, 0s);
-}
-@keyframes pdFloat{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-7px);} }
-
-/* Tahap 4 — menetap di pojok kanan bawah, tetap melayang */
-.photo-dock.pd-docked{
-  top: calc(100svh - 76px);
-  left: calc(100vw - 76px);
-  width:100px; height:100px;
-  border-radius:20px;
-  opacity:1;
-}
-@media (max-width:380px){
-  .photo-dock.pd-docked{ width:80px; height:80px; top:calc(100svh - 60px); left:calc(100vw - 60px); }
-}
+@keyframes profCornerFloat{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-8px); } }
+@media (max-width:380px){ .prof-corner-photo{ width:70px; height:70px; } }
 
 /* ---------- ANIMASI BUNGA SAAT TOMBOL "TERIMA" ---------- */
 .accept-burst{ position:fixed; inset:0; z-index:60; pointer-events:none; overflow:hidden; }
@@ -710,12 +817,10 @@ button{ font-family:inherit; cursor:pointer; }
 
 /* ---------- RESPONSIF UNTUK DESKTOP / LAPTOP ---------- */
 @media (min-width:900px){
-  .book{ --book-w: clamp(360px, 34vw, 460px); }
+  :root{ --book-w: clamp(360px, 34vw, 460px); }
   .ps-wrap{ max-width:460px; border-radius:26px; box-shadow: var(--shadow-3); margin-top: 3vh; margin-bottom: 3vh; min-height:auto; max-height:94vh; overflow-y:auto; }
   #screen-photoshoot{ align-items:center; }
-  .profile-card{ box-shadow: var(--shadow-3); border-radius: 8px; overflow:hidden; }
   #music-player{ width:min(380px, 92vw); }
-  .photo-dock.pd-docked{ width:112px; height:112px; top: calc(100vh - 96px); left: calc(100vw - 96px); }
 }
 @media (min-width:1280px){
   .page-text{ font-size: clamp(22px, 1.6vw, 30px); }

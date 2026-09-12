@@ -25,10 +25,16 @@ const PROFILE = {
 // 3) Teks halaman terakhir setelah menekan "Terima"
 const FINAL_TEXT = "Yeyy, diterima<br>makasih sayangku cantik 🤍";
 
-// 4) Info lagu untuk music player (bisa diganti manual, atau otomatis
-//    terisi nama file begitu kamu menambahkan lagu lewat tombol +)
-const SONG_TITLE = "Belum ada lagu";
-const SONG_ARTIST = "ketuk + untuk menambahkan lagu";
+// 4) Playlist musik. Taruh 5 file musikmu di folder "music/" dengan nama
+//    persis: lagu1.mp3, lagu2.mp3, lagu3.mp3, lagu4.mp3, lagu5.mp3
+//    lalu ganti judul & nama artis di bawah ini sesuai lagu aslinya.
+const SONGS = [
+  { src: 'music/lagu1.mp3', title: 'Lagu Kita #1', artist: 'Ganti nama artis' },
+  { src: 'music/lagu2.mp3', title: 'Lagu Kita #2', artist: 'Ganti nama artis' },
+  { src: 'music/lagu3.mp3', title: 'Lagu Kita #3', artist: 'Ganti nama artis' },
+  { src: 'music/lagu4.mp3', title: 'Lagu Kita #4', artist: 'Ganti nama artis' },
+  { src: 'music/lagu5.mp3', title: 'Lagu Kita #5', artist: 'Ganti nama artis' }
+];
 
 /* ==========================================================================
    Mulai dari sini adalah logika. Tidak perlu diubah kecuali ingin
@@ -106,6 +112,7 @@ book.addEventListener('click', () => {
   book.classList.add('opening');
   window.__bookOpened = true;
   if (window.__mpAutoplay) window.__mpAutoplay(); // musik otomatis diputar saat buku dibuka
+  if (window.__mpOpenSheet) window.__mpOpenSheet(); // popup Now Playing otomatis muncul saat buku dibuka
   setTimeout(() => showScreen('screen-book'), 650);
 });
 
@@ -168,7 +175,7 @@ function revealPressButton(){
 pagesWrap.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'btn-tekan') {
     showScreen('screen-profile');
-    playPhotoDockIntro();
+    playProfileIntro();
   }
 });
 
@@ -245,7 +252,7 @@ function startPetals(){
   petalInterval = setInterval(spawn, rate);
 }
 // Menghentikan bunga berjatuhan sepenuhnya (dipakai di halaman photoshoot,
-// supaya photoshoot & photo-dock bebas dari animasi bunga)
+// supaya photoshoot bebas dari animasi bunga)
 function stopPetals(){
   if (petalInterval){ clearInterval(petalInterval); petalInterval = null; }
   document.querySelectorAll('.petal').forEach((p) => p.remove());
@@ -303,31 +310,16 @@ document.addEventListener('click', (e) => {
   if (btn) playTapSfx();
 }, true);
 
-// ---- Music player (gaya Spotify) ----
-// Taruh file musikmu sendiri di folder "music/" di samping index.html,
-// misalnya "music/lagu.mp3", lalu ganti DEFAULT_SONG_SRC di bawah ini.
-// Kalau file belum ada, player otomatis kembali ke tampilan "belum ada lagu"
-// dan kamu tetap bisa menambah lagu manual lewat tombol +.
-const DEFAULT_SONG_SRC = 'music/lagu.mp3';
-const DEFAULT_SONG_TITLE = 'Lagu Kita';
-const DEFAULT_SONG_ARTIST = 'ketuk tombol untuk memutar';
-
+// ---- Music player (gaya Spotify) — versi playlist + popup Now Playing ----
+// Daftar lagu diatur lewat konstanta SONGS di bagian "GANTI DI SINI" atas.
 (function initMusicPlayer(){
   const mpAudio = new Audio();
   let mpPlaying = false;
-  let hasDefaultSong = false;
+  let songReady = false;
+  let songIndex = 0;
 
-  document.getElementById('mp-title').textContent = SONG_TITLE;
-  document.getElementById('mp-artist').textContent = SONG_ARTIST;
-
-  if (DEFAULT_SONG_SRC){
-    mpAudio.src = DEFAULT_SONG_SRC;
-    mpAudio.preload = 'metadata';
-  }
-
-  const mpFile = document.getElementById('mp-file');
-  const mpAdd = document.getElementById('mp-add');
   const mpPlay = document.getElementById('mp-play');
+  const mpNext = document.getElementById('mp-next');
   const mpArt = document.getElementById('mp-art');
   const mpFill = document.getElementById('mp-progress-fill');
   const mpCur = document.getElementById('mp-cur');
@@ -335,6 +327,20 @@ const DEFAULT_SONG_ARTIST = 'ketuk tombol untuk memutar';
   const mpProgress = document.getElementById('mp-progress');
   const mpTitleEl = document.getElementById('mp-title');
   const mpArtistEl = document.getElementById('mp-artist');
+  const mpChevron = document.getElementById('mp-chevron');
+
+  const mpSheetOverlay = document.getElementById('mp-sheet-overlay');
+  const mpSheet = document.getElementById('mp-sheet');
+  const mpSheetArt = document.getElementById('mp-sheet-art');
+  const mpSheetTitleEl = document.getElementById('mp-sheet-title');
+  const mpSheetArtistEl = document.getElementById('mp-sheet-artist');
+  const mpSheetFill = document.getElementById('mp-sheet-progress-fill');
+  const mpSheetProgress = document.getElementById('mp-sheet-progress');
+  const mpSheetCur = document.getElementById('mp-sheet-cur');
+  const mpSheetDur = document.getElementById('mp-sheet-dur');
+  const mpSheetPlay = document.getElementById('mp-sheet-play');
+  const mpSheetPrev = document.getElementById('mp-sheet-prev');
+  const mpSheetNext = document.getElementById('mp-sheet-next');
 
   function fmtTime(s){
     if (!isFinite(s) || s < 0) return '0:00';
@@ -343,170 +349,231 @@ const DEFAULT_SONG_ARTIST = 'ketuk tombol untuk memutar';
     return `${m}:${sec}`;
   }
   function updatePlayIcon(){
-    mpPlay.innerHTML = mpPlaying
+    const icon = mpPlaying
       ? '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>'
       : '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>';
+    mpPlay.innerHTML = icon;
+    mpSheetPlay.innerHTML = icon;
+    mpArt.classList.toggle('mp-spin', mpPlaying);
+    mpSheetArt.classList.toggle('mp-spin', mpPlaying);
+  }
+  function updateSongInfo(){
+    const song = SONGS[songIndex] || { title: 'Belum ada lagu', artist: 'ketuk untuk memutar' };
+    mpTitleEl.textContent = song.title;
+    mpArtistEl.textContent = song.artist;
+    mpSheetTitleEl.textContent = song.title;
+    mpSheetArtistEl.textContent = song.artist;
   }
 
-  let songReady = false;
+  function loadSong(index, autoplay){
+    songIndex = ((index % SONGS.length) + SONGS.length) % SONGS.length;
+    const song = SONGS[songIndex];
+    songReady = false;
+    mpAudio.src = song.src;
+    mpAudio.preload = 'metadata';
+    updateSongInfo();
+    mpFill.style.width = '0%';
+    mpSheetFill.style.width = '0%';
+    if (autoplay){
+      mpAudio.play().then(() => {
+        mpPlaying = true;
+        updatePlayIcon();
+      }).catch(() => { /* browser menahan autoplay, pengguna bisa tekan play manual */ });
+    }
+  }
 
-  // Kalau lagu bawaan dari folder "music/" berhasil dimuat, tampilkan judulnya.
   mpAudio.addEventListener('loadedmetadata', () => {
-    if (!hasDefaultSong && mpAudio.src.indexOf(DEFAULT_SONG_SRC) !== -1){
-      hasDefaultSong = true;
-      mpTitleEl.textContent = DEFAULT_SONG_TITLE;
-      mpArtistEl.textContent = DEFAULT_SONG_ARTIST;
-    }
     songReady = true;
-    mpDur.textContent = fmtTime(mpAudio.duration);
-    if (window.__bookOpened && window.__mpAutoplay) window.__mpAutoplay();
+    const d = fmtTime(mpAudio.duration);
+    mpDur.textContent = d;
+    mpSheetDur.textContent = d;
   });
-  // Kalau file bawaan belum ditaruh di folder "music/", jangan error —
-  // kembali saja ke tampilan "belum ada lagu" seperti semula.
-  mpAudio.addEventListener('error', () => {
-    if (!songReady){
-      mpAudio.removeAttribute('src');
-      mpTitleEl.textContent = SONG_TITLE;
-      mpArtistEl.textContent = SONG_ARTIST;
-    }
-  });
+  mpAudio.addEventListener('error', () => { songReady = false; });
 
-  mpAdd.addEventListener('click', () => mpFile.click());
-  mpFile.addEventListener('change', (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    mpAudio.src = url;
-    songReady = true;
-    const rawName = file.name.replace(/\.[^/.]+$/, '');
-    mpTitleEl.textContent = rawName;
-    mpArtistEl.textContent = 'Lagu pilihanmu';
-    mpAudio.play().then(() => {
-      mpPlaying = true;
-      updatePlayIcon();
-      mpArt.classList.add('mp-spin');
-    }).catch(() => {});
+  // Lagu habis -> otomatis lanjut ke lagu berikutnya + popup muncul otomatis
+  mpAudio.addEventListener('ended', () => {
+    nextSong(true);
   });
 
   mpAudio.addEventListener('timeupdate', () => {
     const pct = mpAudio.duration ? (mpAudio.currentTime / mpAudio.duration) * 100 : 0;
     mpFill.style.width = pct + '%';
-    mpCur.textContent = fmtTime(mpAudio.currentTime);
-    mpDur.textContent = fmtTime(mpAudio.duration);
-  });
-  mpAudio.addEventListener('ended', () => {
-    mpPlaying = false;
-    updatePlayIcon();
-    mpArt.classList.remove('mp-spin');
+    mpSheetFill.style.width = pct + '%';
+    const cur = fmtTime(mpAudio.currentTime);
+    mpCur.textContent = cur;
+    mpSheetCur.textContent = cur;
   });
 
-  mpProgress.addEventListener('click', (e) => {
+  function seekFromEvent(e, el){
     if (!mpAudio.duration) return;
-    const rect = mpProgress.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
     mpAudio.currentTime = pct * mpAudio.duration;
-  });
+  }
+  mpProgress.addEventListener('click', (e) => seekFromEvent(e, mpProgress));
+  mpSheetProgress.addEventListener('click', (e) => seekFromEvent(e, mpSheetProgress));
 
-  mpPlay.addEventListener('click', () => {
-    if (!songReady) { mpFile.click(); return; }
+  function togglePlay(){
+    if (!songReady && mpAudio.src) { mpAudio.load(); }
     if (mpPlaying) {
       mpAudio.pause();
       mpPlaying = false;
-      mpArt.classList.remove('mp-spin');
     } else {
       mpAudio.play().catch(() => {});
       mpPlaying = true;
-      mpArt.classList.add('mp-spin');
     }
     updatePlayIcon();
-  });
+  }
+  mpPlay.addEventListener('click', togglePlay);
+  mpSheetPlay.addEventListener('click', togglePlay);
+
+  // "auto" = true berarti lagu berganti sendiri (bukan karena tombol next
+  // ditekan) -> sesuai permintaan, popup Now Playing otomatis dimunculkan.
+  function nextSong(auto){
+    loadSong(songIndex + 1, true);
+    if (auto) openSheet();
+  }
+  function prevSong(){
+    loadSong(songIndex - 1, true);
+  }
+  mpNext.addEventListener('click', () => nextSong(false));
+  mpSheetNext.addEventListener('click', () => nextSong(false));
+  mpSheetPrev.addEventListener('click', prevSong);
+
+  // ---- Popup "Now Playing" ala iPhone ----
+  let sheetTimer = null;
+  function resetSheetTimer(){
+    clearTimeout(sheetTimer);
+    sheetTimer = setTimeout(closeSheet, 60000); // otomatis hilang setelah 1 menit tak disentuh
+  }
+  function openSheet(){
+    mpSheetOverlay.classList.add('show');
+    resetSheetTimer();
+  }
+  function closeSheet(){
+    mpSheetOverlay.classList.remove('show');
+    clearTimeout(sheetTimer);
+  }
+  function toggleSheet(){
+    if (mpSheetOverlay.classList.contains('show')) closeSheet();
+    else openSheet();
+  }
+  mpChevron.addEventListener('click', (e) => { e.stopPropagation(); toggleSheet(); });
+  mpSheetOverlay.addEventListener('click', (e) => { if (e.target === mpSheetOverlay) closeSheet(); });
+  mpSheet.addEventListener('click', resetSheetTimer);
 
   updatePlayIcon();
+  loadSong(0, false);
 
   // Dipakai oleh tombol speaker di halaman akhir & animasi buka buku.
   window.__mpAudio = mpAudio;
   window.__mpAutoplay = function(){
-    if (!songReady || mpPlaying) return;
+    if (mpPlaying) return;
     mpAudio.play().then(() => {
       mpPlaying = true;
       updatePlayIcon();
-      mpArt.classList.add('mp-spin');
     }).catch(() => { /* browser menahan autoplay, pengguna bisa tekan play manual */ });
   };
+  // Dipakai supaya popup otomatis muncul saat buku/isi buku dibuka.
+  window.__mpOpenSheet = openSheet;
 })();
 
-// ---- Animasi foto profil / photo-dock ----
-// Tahap 1: muncul di tengah, ukuran sedang, melayang selama 3 detik.
-// Tahap 2: menyebar jadi 5 (1 di tengah ukuran kecil + 4 klon di posisi acak),
-//          semua ikut melayang dengan waktu yang sedikit berbeda-beda (acak).
-// Tahap 3: kelimanya menyatu kembali ke tengah.
-// Tahap 4: berpindah ke pojok kanan bawah, menetap di sana sambil tetap melayang.
-function randomDockScatterSpots(n){
-  const spots = [];
-  for (let i = 0; i < n; i++){
-    const x = 16 + Math.random() * 66;   // 16%–82% lebar layar
-    const y = 14 + Math.random() * 58;   // 14%–72% tinggi layar
-    spots.push({ top: y + 'vh', left: x + 'vw' });
+// ---- Animasi intro halaman profil ----
+// Tahap 1: halaman kosong/polos (kartu profil belum tampak).
+// Tahap 2: balon (membawa foto image/cantik.png) terbang dari bawah ke tengah.
+// Tahap 3: balon meletus di tengah, foto ikut menghilang.
+// Tahap 4: bunga (image/bunga-1..11.png) menyebar dari sedikit sampai menutup
+//          seluruh layar, bertahan 1 detik penuh.
+// Tahap 5: bunga menghilang, kartu profil muncul, dan foto cantik.png muncul
+//          melayang permanen di pojok kiri bawah.
+const PROFILE_PHOTO_SRC = 'image/cantik.png'; // taruh foto ini di folder "image/"
+
+function spawnFlowerFlood(onDone){
+  const total = 70;
+  const flowers = [];
+  let spawned = 0;
+
+  function spawnOne(){
+    const f = document.createElement('img');
+    f.className = 'prof-flower';
+    f.src = randomFlowerImage();
+    f.alt = '';
+    f.style.left = (Math.random() * 100) + 'vw';
+    f.style.top = (Math.random() * 100) + 'vh';
+    f.style.width = (34 + Math.random() * 30) + 'px';
+    f.style.setProperty('--frot', (Math.random() * 360 - 180) + 'deg');
+    document.body.appendChild(f);
+    flowers.push(f);
+    requestAnimationFrame(() => f.classList.add('show'));
+
+    spawned++;
+    if (spawned < total){
+      // makin lama makin cepat, biar terasa "makin menutup layar"
+      const delay = Math.max(6, 26 - spawned * 0.3);
+      setTimeout(spawnOne, delay);
+    } else {
+      // bunga sudah menutup seluruh halaman -> bertahan 1 detik penuh
+      setTimeout(() => {
+        flowers.forEach((fl) => fl.classList.add('fade'));
+        setTimeout(() => {
+          flowers.forEach((fl) => fl.remove());
+          if (onDone) onDone();
+        }, 650);
+      }, 1000);
+    }
   }
-  return spots;
+  spawnOne();
 }
 
-function playPhotoDockIntro(){
-  const dock = document.getElementById('photo-dock');
-  if (!dock || dock.dataset.played === '1') return;
-  dock.dataset.played = '1';
+function playProfileIntro(){
+  const card = document.querySelector('#screen-profile .profile-card');
+  if (!card || card.dataset.played === '1') return;
+  card.dataset.played = '1';
 
-  const originalImg = dock.querySelector('img');
-  const photoSrc = originalImg ? originalImg.src : '';
-
-  // Tahap 1 — muncul di tengah, ukuran sedang, melayang
-  dock.classList.add('pd-center');
-  requestAnimationFrame(() => {
-    if (originalImg){
-      originalImg.style.setProperty('--fd', '3.2s');
-      originalImg.classList.add('pd-float');
-    }
-  });
+  // Tahap 2 — balon (dengan foto tergantung) terbang dari bawah ke tengah
+  const balloon = document.createElement('div');
+  balloon.className = 'prof-balloon';
+  balloon.innerHTML =
+    `<svg class="prof-balloon-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+      `<ellipse cx="50" cy="46" rx="42" ry="46" fill="url(#profBalloonGrad)"/>` +
+      `<path d="M50 92 L45 101 L55 101 Z" fill="#AD6274"/>` +
+      `<path d="M50 101 C 38 110, 62 118, 50 130" stroke="#6D5058" stroke-width="2" fill="none"/>` +
+      `<ellipse cx="34" cy="28" rx="10" ry="15" fill="#fff" opacity=".35"/>` +
+      `<defs><linearGradient id="profBalloonGrad" x1="0" y1="0" x2="1" y2="1">` +
+        `<stop offset="0%" stop-color="#E7A6B4"/><stop offset="100%" stop-color="#AD6274"/>` +
+      `</linearGradient></defs>` +
+    `</svg>` +
+    `<div class="prof-balloon-photo"><img src="${PROFILE_PHOTO_SRC}" alt=""></div>`;
+  document.body.appendChild(balloon);
+  requestAnimationFrame(() => balloon.classList.add('rise'));
 
   setTimeout(() => {
-    // Tahap 2 — mengecil di tengah + 4 klon menyebar acak, semua melayang random
-    dock.classList.add('pd-small');
-    const clones = [];
-    randomDockScatterSpots(4).forEach((spot) => {
-      const clone = document.createElement('div');
-      clone.className = 'pd-clone';
-      const cImg = document.createElement('img');
-      cImg.src = photoSrc;
-      cImg.alt = '';
-      clone.appendChild(cImg);
-      clone.style.top = spot.top;
-      clone.style.left = spot.left;
-      document.body.appendChild(clone);
-      clones.push(clone);
-      requestAnimationFrame(() => {
-        clone.classList.add('pd-show');
-        cImg.style.setProperty('--fd', (2.6 + Math.random() * 1.6) + 's');
-        cImg.style.setProperty('--fdelay', (Math.random() * 1.4) + 's');
-        cImg.classList.add('pd-float');
-      });
-    });
+    // Tahap 3 — balon meletus di tengah, foto ikut menghilang
+    balloon.classList.add('pop');
+
+    const burst = document.createElement('div');
+    burst.className = 'prof-pop-burst';
+    document.body.appendChild(burst);
+    requestAnimationFrame(() => burst.classList.add('show'));
 
     setTimeout(() => {
-      // Tahap 3 — menyatu kembali ke tengah
-      clones.forEach((c) => {
-        c.style.top = '50%';
-        c.style.left = '50%';
-        c.classList.remove('pd-show');
-      });
+      balloon.remove();
+      burst.classList.add('hide');
+      setTimeout(() => burst.remove(), 400);
 
-      setTimeout(() => {
-        clones.forEach((c) => c.remove());
-        // Tahap 4 — pindah ke pojok kanan bawah, menetap & tetap melayang
-        dock.classList.remove('pd-center', 'pd-small');
-        dock.classList.add('pd-docked');
-      }, 650);
-    }, 2200);
-  }, 3000);
+      // Tahap 4 — bunga menutup layar, tahan 1 detik, lalu hilang
+      spawnFlowerFlood(() => {
+        // Tahap 5 — kartu profil muncul + foto melayang permanen di pojok kiri bawah
+        card.classList.add('show');
+
+        const corner = document.createElement('div');
+        corner.className = 'prof-corner-photo';
+        corner.innerHTML = `<img src="${PROFILE_PHOTO_SRC}" alt="">`;
+        document.body.appendChild(corner);
+        requestAnimationFrame(() => corner.classList.add('show'));
+      });
+    }, 380);
+  }, 2100);
 }
 
 // ---- Animasi pertama saat tombol "Terima" ditekan: bunga menutup layar lalu menyebar ----
