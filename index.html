@@ -6,7 +6,7 @@
 <title>Untukmu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Slackey&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Slackey&family=Yellowtail&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="monster-chat.css">
 </head>
@@ -172,32 +172,53 @@
 
 <!-- ============== 3. PROFIL ============== -->
 <section id="screen-profile" class="screen">
+  <div class="pp-bg-deco" aria-hidden="true">
+    <span class="pp-blob pp-blob-1"></span>
+    <span class="pp-blob pp-blob-2"></span>
+    <span class="pp-blob pp-blob-3"></span>
+  </div>
+
   <div class="profile-card">
-    <div class="profile-banner"></div>
-    <div class="profile-photo-wrap">
-      <div class="profile-photo" id="profile-initial">A</div>
-    </div>
-    <div class="profile-body">
-      <div class="profile-name" id="profile-name">Namamu</div>
-      <div class="profile-username" id="profile-username">@username</div>
+    <div class="pp-phone">
+      <img class="pp-phone-frame" src="image/mockup-iphone.png" alt="" aria-hidden="true">
 
-      <div class="profile-stats">
-        <div class="stat"><strong id="stat-following">12</strong><span>Mengikuti</span></div>
-        <div class="stat"><strong id="stat-followers">1</strong><span>Pengikut</span></div>
-        <div class="stat"><strong id="stat-likes">99+</strong><span>Suka</span></div>
-      </div>
+      <div class="pp-screen">
+        <div class="pp-scroll">
 
-      <div class="profile-bio" id="profile-bio">
-        satu-satunya pengikut yang penting cuma dia.
-      </div>
+          <div class="pp-header">
+            <div class="pp-avatar">
+              <img class="pp-avatar-img" src="image/cantik.png" alt="Foto profil"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="pp-avatar-fallback" id="profile-initial" style="display:none;"></div>
+            </div>
+            <div class="pp-id">
+              <div class="pp-name" id="profile-name">Kamu</div>
+              <div class="pp-username" id="profile-username">@untuk.kamu</div>
+            </div>
+          </div>
 
-      <div class="profile-divider"></div>
+          <div class="pp-stats">
+            <div class="pp-stat"><strong id="stat-following">12</strong><span>Mengikuti</span></div>
+            <div class="pp-stat"><strong id="stat-followers">1</strong><span>Pengikut</span></div>
+            <div class="pp-stat"><strong id="stat-likes">99+</strong><span>Suka</span></div>
+          </div>
 
-      <div class="ask-heading">Maukah kau jadi pacarku?</div>
+          <div class="pp-bio" id="profile-bio">satu-satunya notifikasi yang selalu kutunggu.</div>
 
-      <div class="ask-actions" id="ask-actions">
-        <button class="btn-accept" id="btn-accept">Terima</button>
-        <button class="btn-reject" id="btn-reject">Tolak</button>
+          <div class="pp-highlights" id="pp-highlights"></div>
+
+          <div class="pp-hero">
+            <div class="pp-hero-ribbon">
+              <span class="pp-hero-text" id="pp-hero-text">Wanna be my girlfriend?</span>
+            </div>
+          </div>
+
+          <div class="ask-actions" id="ask-actions">
+            <button class="btn-accept" id="btn-accept" type="button">Terima</button>
+            <button class="btn-reject" id="btn-reject" type="button">Tolak</button>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>

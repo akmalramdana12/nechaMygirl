@@ -256,9 +256,16 @@ const MC_QUESTION_LABELS = {
       const list = JSON.parse(localStorage.getItem(MC_STORAGE_KEY) || '[]');
       list.push(entry);
       localStorage.setItem(MC_STORAGE_KEY, JSON.stringify(list));
+
+      // verifikasi tulisan benar-benar tersimpan (bantu deteksi storage diblokir)
+      const check = JSON.parse(localStorage.getItem(MC_STORAGE_KEY) || '[]');
+      if (!check.some((e) => e.id === entry.id)) {
+        throw new Error('Verifikasi localStorage gagal — data tidak tersimpan.');
+      }
       showToast('✅ Jawabanmu berhasil dikirim!');
     } catch (e) {
-      showToast('Jawaban tersimpan di perangkat ini.');
+      console.error('[monster-chat] Gagal menyimpan jawaban:', e);
+      showToast('⚠️ Gagal menyimpan. Coba buka halaman ini lewat link aslinya (bukan mode private/incognito).');
     }
   }
 

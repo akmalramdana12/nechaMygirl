@@ -19,8 +19,15 @@ const PROFILE = {
   following: 12,
   followers: 1,
   likes: "99+",
-  initial: "K" // huruf yang muncul di foto profil bila tidak pakai foto asli
+  initial: "K", // huruf yang muncul di foto profil bila tidak pakai foto asli
+  question: "Wanna be my girlfriend?" // pesan utama di halaman profil
 };
+
+// 2b) Sorotan/highlight di bawah bio (gaya TikTok/Instagram). Boleh diisi
+//     lebih dari satu — tinggal tambah baris baru di array ini.
+const HIGHLIGHTS = [
+  { image: "image/cantik.png", title: "kamu" }
+];
 
 // 3) Teks halaman terakhir setelah menekan "Terima"
 const FINAL_TEXT = "Yeyy, diterima<br>makasih sayangku cantik 🤍";
@@ -50,6 +57,23 @@ document.getElementById('stat-followers').textContent = PROFILE.followers;
 document.getElementById('stat-likes').textContent = PROFILE.likes;
 document.getElementById('profile-initial').textContent = PROFILE.initial;
 document.getElementById('final-text').innerHTML = FINAL_TEXT;
+
+// ---- render pesan utama halaman profil ("Wanna be my girlfriend?") ----
+const ppHeroTextEl = document.getElementById('pp-hero-text');
+if (ppHeroTextEl) ppHeroTextEl.textContent = PROFILE.question;
+
+// ---- render highlight (komponen reusable dari config HIGHLIGHTS) ----
+const ppHighlightsEl = document.getElementById('pp-highlights');
+if (ppHighlightsEl){
+  HIGHLIGHTS.forEach((h) => {
+    const item = document.createElement('div');
+    item.className = 'pp-highlight';
+    item.innerHTML =
+      `<div class="pp-highlight-photo"><img src="${h.image}" alt=""></div>` +
+      `<span class="pp-highlight-title">${h.title}</span>`;
+    ppHighlightsEl.appendChild(item);
+  });
+}
 
 // ---- Stiker lucu pemanis (pengganti "icon Pinterest": emoji dekoratif
 //      acak, supaya tanpa perlu menarik gambar berhak cipta dari luar) ----

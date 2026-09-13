@@ -25,7 +25,10 @@ function fmtDate(iso) {
 function loadEntries() {
   try {
     return JSON.parse(localStorage.getItem(MC_STORAGE_KEY) || '[]').sort((a, b) => b.id - a.id);
-  } catch (e) { return []; }
+  } catch (e) {
+    console.error('[pesan.html] Gagal membaca localStorage:', e);
+    return null; // null = storage error, beda dari [] = memang belum ada jawaban
+  }
 }
 
 function renderList() {
@@ -34,8 +37,15 @@ function renderList() {
   const entries = loadEntries();
 
   listEl.innerHTML = '';
+
+  if (entries === null) {
+    emptyEl.hidden = false;
+    emptyEl.textContent = '⚠️ Tidak bisa mengakses penyimpanan browser di halaman ini. Pastikan kamu membuka pesan.html dari link/folder yang sama persis dengan index.html, lewat browser & perangkat yang sama dengan tempat jawaban dikirim (bukan mode private/incognito).';
+    return;
+  }
   if (!entries.length) {
     emptyEl.hidden = false;
+    emptyEl.textContent = 'Belum ada jawaban yang masuk.';
     return;
   }
   emptyEl.hidden = true;

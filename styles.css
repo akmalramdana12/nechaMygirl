@@ -324,123 +324,209 @@ button{ font-family:inherit; cursor:pointer; }
 #btn-tekan.show{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
 #btn-tekan:hover{ transform:translateX(-50%) translateY(-3px); box-shadow: 0 18px 36px rgba(173,98,116,0.48); }
 
-/* ---------- 3. PROFIL ---------- */
-#screen-profile{ align-items:flex-start; padding:0; overflow-y:auto; position:relative; }
+/* ---------- 3. PROFIL — TikTok-style di dalam mockup iPhone ---------- */
+#screen-profile{
+  align-items:center; justify-content:center;
+  padding: 20px; overflow-y:auto; position:relative;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255,143,177,0.14), transparent 46%),
+    radial-gradient(circle at 88% 88%, rgba(205,165,94,0.12), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(237,227,245,0.5), transparent 60%),
+    var(--cream);
+}
+.pp-bg-deco{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.pp-blob{ position:absolute; border-radius:50%; filter: blur(30px); opacity:.55; }
+.pp-blob-1{ width:260px; height:260px; top:-70px; left:-60px; background: radial-gradient(circle, rgba(255,143,177,0.35), transparent 70%); }
+.pp-blob-2{ width:220px; height:220px; bottom:-60px; right:-50px; background: radial-gradient(circle, rgba(205,165,94,0.3), transparent 70%); }
+.pp-blob-3{ width:180px; height:180px; top:40%; right:6%; background: radial-gradient(circle, rgba(237,227,245,0.6), transparent 70%); }
+
+/* Wrapper animasi reveal — class "profile-card" TETAP dipakai karena
+   di-toggle oleh playProfileIntro() (animasi balon+bunga yang sudah ada).
+   Jangan ganti nama class ini. */
 .profile-card{
-  width:100%; max-width:420px; margin: 0 auto;
-  min-height:100%;
-  background: var(--paper);
+  position:relative; z-index:1;
+  width:100%;
+  display:flex; align-items:center; justify-content:center;
   opacity:0; transform: scale(.94);
   pointer-events:none;
   transition: opacity .7s ease, transform .7s cubic-bezier(.2,.9,.24,1);
 }
 .profile-card.show{ opacity:1; transform: scale(1); pointer-events:auto; }
-.profile-banner{
-  height:176px; width:100%;
-  background:
-    radial-gradient(circle at 22% 28%, rgba(205,165,94,0.4), transparent 55%),
-    radial-gradient(circle at 82% 72%, rgba(217,152,166,0.6), transparent 55%),
-    linear-gradient(135deg, #6D5058, #2B1A20);
-  position:relative;
-}
-.profile-photo-wrap{
-  position:relative;
-  margin: -48px auto 0;
-  width:94px; height:94px;
-}
-.profile-photo{
-  width:94px; height:94px;
-  border-radius:50%;
-  border:4px solid var(--paper);
-  background: linear-gradient(155deg, var(--rose), var(--rose-dark));
-  display:flex; align-items:center; justify-content:center;
-  font-family:'Cormorant Garamond', serif;
-  font-size:33px; font-style:italic; color:#fff;
-  box-shadow: var(--shadow-1);
-}
-.profile-body{ padding: 16px 30px 50px; text-align:center; }
-.profile-name{ font-family:'Cormorant Garamond', serif; font-style:italic; font-size:23px; font-weight:600; }
-.profile-username{ font-size:13px; color: var(--plum-soft); margin-top:2px; }
-.profile-stats{
-  display:flex; justify-content:center; gap:34px;
-  margin: 22px 0 6px;
-}
-.stat{ text-align:center; }
-.stat strong{ display:block; font-size:17px; }
-.stat span{ font-size:12px; color: var(--plum-soft); }
-.profile-bio{
-  margin-top:16px; font-size:14px; line-height:1.65; color: var(--plum-soft);
-}
-.profile-divider{ width:40px; height:1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 32px auto; opacity:.7; }
 
-/* Layout horizontal khusus desktop/layar lebar */
-@media (min-width:900px){
-  #screen-profile{ align-items:center; justify-content:center; }
-  .profile-card{
-    max-width: 760px;
-    width: 90vw;
-    min-height:auto;
-    max-height: 88vh;
-    display:flex;
-    flex-direction:row;
-    align-items:stretch;
-    border-radius: 26px;
-    overflow:hidden;
-    box-shadow: var(--shadow-3);
-  }
-  .profile-banner{
-    position:relative;
-    width: 300px; min-height:100%; flex-shrink:0;
-  }
-  .profile-photo-wrap{
-    position:absolute; top:50%; left:50%; margin:0;
-    transform:translate(-50%,-50%);
-  }
-  .profile-body{
-    flex:1; min-width:0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center;
-    padding: clamp(30px, 5vh, 50px) clamp(30px, 5vw, 56px);
-    overflow-y:auto;
-  }
-  .profile-name, .profile-username, .profile-bio, .ask-heading{ text-align:center; }
-  .profile-stats{ justify-content:center; }
-  .profile-divider{ margin: 28px auto; }
-  .ask-actions{ width:100%; max-width:340px; }
-}
-.ask-heading{
-  font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:600;
-  font-size: clamp(22px, 5vw, 28px);
-  line-height:1.42;
-}
-.ask-actions{
+/* ---------- Bingkai iPhone (aset image/mockup-iphone.png) ---------- */
+.pp-phone{
   position:relative;
-  margin-top: 30px;
-  height: 120px;
+  aspect-ratio: 352 / 710;
+  height: min(76svh, 720px, calc(88vw * 710 / 352));
+  width: auto;
+  filter: drop-shadow(0 30px 50px rgba(58,37,48,0.28));
 }
-.btn-accept, .btn-reject{
-  padding: 13px 32px;
-  border-radius: 30px;
-  font-size:14px;
-  letter-spacing:.4px;
-  border:1px solid transparent;
-}
-.btn-accept{
-  position:absolute; left:50%; top:6px; transform:translateX(calc(-50% - 62px));
-  background: linear-gradient(135deg, var(--rose-dark), #8F4A5C);
-  color:#fff;
-  box-shadow: 0 14px 28px rgba(173,98,116,0.36);
-  transition: transform .22s var(--ease-silk), box-shadow .22s ease;
+.pp-phone-frame{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:contain;
+  pointer-events:none;
   z-index:2;
+  user-select:none;
+  -webkit-user-drag:none;
 }
-.btn-accept:hover{ transform: translateX(calc(-50% - 62px)) translateY(-3px); box-shadow: 0 18px 34px rgba(173,98,116,0.44); }
-.btn-reject{
-  position:absolute; left:50%; top:6px; transform:translateX(calc(-50% + 62px));
-  background: transparent; color: var(--plum-soft); border-color: var(--line);
-  transition: left .35s var(--ease-silk), top .35s var(--ease-silk), opacity .4s ease;
+.pp-screen{
+  position:absolute;
+  inset: 7% 7.5% 4.5% 8%;
+  border-radius: clamp(16px, 8vw, 32px);
+  overflow:hidden;
+  background: linear-gradient(180deg, #FFFFFF, #FFF6FA);
   z-index:1;
 }
+.pp-scroll{
+  height:100%;
+  overflow-y:auto;
+  padding: 7% 6% 6%;
+  display:flex; flex-direction:column;
+  scrollbar-width:none;
+}
+.pp-scroll::-webkit-scrollbar{ display:none; }
+
+/* ---------- Header: foto + nama + username ---------- */
+.pp-header{
+  display:flex; align-items:center; gap:10px;
+  opacity:0; transform: translateY(10px);
+}
+.pp-avatar{
+  position:relative; flex-shrink:0;
+  width: 21%; aspect-ratio:1;
+  border-radius:50%;
+  overflow:hidden;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 10px rgba(58,37,48,0.18);
+  background: linear-gradient(155deg, var(--rose), var(--rose-dark));
+}
+.pp-avatar-img{ width:100%; height:100%; object-fit:cover; display:block; }
+.pp-avatar-fallback{
+  width:100%; height:100%;
+  align-items:center; justify-content:center;
+  font-family:'Cormorant Garamond', serif; font-style:italic; font-weight:600;
+  font-size: clamp(16px, 4vw, 22px); color:#fff;
+}
+.pp-id{ min-width:0; }
+.pp-name{ font-family:'Jost', sans-serif; font-weight:700; font-size: clamp(13px, 3.6vw, 16px); color: var(--plum); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pp-username{ font-size: clamp(10.5px, 2.7vw, 12px); color: var(--plum-soft); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* ---------- Statistik ---------- */
+.pp-stats{
+  display:flex; gap: clamp(14px, 5vw, 22px);
+  margin-top: 10%;
+  opacity:0; transform: translateY(10px);
+}
+.pp-stat{ text-align:left; }
+.pp-stat strong{ display:block; font-size: clamp(13px, 3.4vw, 15px); color: var(--plum); font-weight:700; }
+.pp-stat span{ font-size: clamp(9.5px, 2.4vw, 11px); color: var(--plum-soft); }
+
+/* ---------- Bio ---------- */
+.pp-bio{
+  margin-top: 6%;
+  font-size: clamp(11.5px, 3vw, 13px);
+  color: var(--plum);
+  line-height:1.5;
+  opacity:0; transform: translateY(10px);
+}
+
+/* ---------- Highlights ---------- */
+.pp-highlights{
+  display:flex; gap: clamp(10px, 4vw, 16px);
+  margin-top: 7%;
+  opacity:0; transform: translateY(10px);
+}
+.pp-highlight{ display:flex; flex-direction:column; align-items:center; gap:5px; }
+.pp-highlight-photo{
+  width: clamp(38px, 11vw, 52px); aspect-ratio:1;
+  border-radius:50%;
+  padding:2px;
+  background: conic-gradient(from 210deg, var(--gold), var(--rose-dark), var(--gold-soft), var(--gold));
+}
+.pp-highlight-photo img{
+  width:100%; height:100%; object-fit:cover; border-radius:50%;
+  display:block; border:2px solid #fff;
+}
+.pp-highlight-title{ font-size: clamp(9px, 2.2vw, 10.5px); color: var(--plum-soft); max-width:56px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ---------- Hero: "Wanna be my girlfriend?" ---------- */
+.pp-hero{
+  margin: 9% -6% 0;
+  opacity:0; transform: translateY(10px) scale(.97);
+}
+.pp-hero-ribbon{
+  background: linear-gradient(120deg, rgba(255,163,192,0.55), rgba(255,209,227,0.55));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 6px 16px rgba(255,143,177,0.25);
+  padding: clamp(10px, 3.5vw, 16px) 8%;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+}
+.pp-hero-text{
+  font-family:'Yellowtail', 'Cormorant Garamond', cursive;
+  font-size: clamp(19px, 6.4vw, 27px);
+  line-height:1.15;
+  color: #7A2E45;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 6px 14px rgba(122,46,69,0.18);
+}
+
+/* ---------- Tombol Terima / Tolak ---------- */
+.ask-actions{
+  position:relative;
+  width:100%;
+  height: clamp(64px, 20vw, 84px);
+  margin-top: 8%;
+  flex-shrink:0;
+  opacity:0; transform: translateY(10px);
+}
+.btn-accept, .btn-reject{
+  position:absolute; top:50%; transform: translateY(-50%);
+  padding: clamp(10px, 3.2vw, 14px) clamp(18px, 6vw, 28px);
+  border-radius: 999px;
+  font-family:'Jost', sans-serif;
+  font-weight:700;
+  font-size: clamp(12.5px, 3.4vw, 15px);
+  letter-spacing:.3px;
+  border: none;
+  cursor:pointer;
+  transition: transform .2s cubic-bezier(.3,1.3,.4,1), box-shadow .2s ease, background .2s ease;
+}
+.btn-accept{
+  left: 6%;
+  background: linear-gradient(135deg, #FF8FB1, #E0577F);
+  color:#fff;
+  box-shadow: 0 4px 0 #C23F65, 0 10px 22px rgba(224,87,127,0.4), 0 0 0 4px rgba(255,143,177,0.18);
+  z-index:2;
+}
+.btn-accept:hover{ transform: translateY(-52%) scale(1.05); box-shadow: 0 4px 0 #C23F65, 0 14px 26px rgba(224,87,127,0.48), 0 0 0 5px rgba(255,143,177,0.24); }
+.btn-accept:active{ transform: translateY(-46%) scale(.97); box-shadow: 0 2px 0 #C23F65, 0 6px 14px rgba(224,87,127,0.4); }
+.btn-reject{
+  right: 6%;
+  background: #fff;
+  color: #B3617A;
+  box-shadow: 0 3px 0 var(--line), 0 8px 16px rgba(58,37,48,0.1), inset 0 0 0 1.5px #F6D3DE;
+  z-index:1;
+}
+.btn-reject:hover{ transform: translateY(-52%) scale(1.04); }
+.btn-reject:active{ transform: translateY(-46%) scale(.97); }
 .btn-reject.gone{ opacity:0; pointer-events:none; }
+.btn-accept:focus-visible, .btn-reject:focus-visible{ outline:2.5px solid #E0577F; outline-offset:3px; }
+
+/* ---------- Animasi staggered saat profile-card.show muncul ---------- */
+.profile-card.show .pp-header{ animation: ppRise .55s cubic-bezier(.2,.9,.24,1) .05s forwards; }
+.profile-card.show .pp-stats{ animation: ppRise .55s cubic-bezier(.2,.9,.24,1) .15s forwards; }
+.profile-card.show .pp-bio{ animation: ppRise .55s cubic-bezier(.2,.9,.24,1) .25s forwards; }
+.profile-card.show .pp-highlights{ animation: ppRise .55s cubic-bezier(.2,.9,.24,1) .35s forwards; }
+.profile-card.show .pp-hero{ animation: ppRiseScale .6s cubic-bezier(.2,.9,.24,1) .45s forwards; }
+.profile-card.show .ask-actions{ animation: ppRise .55s cubic-bezier(.2,.9,.24,1) .58s forwards; }
+@keyframes ppRise{ to{ opacity:1; transform: translateY(0); } }
+@keyframes ppRiseScale{ to{ opacity:1; transform: translateY(0) scale(1); } }
+
+@media (prefers-reduced-motion: reduce){
+  .pp-header, .pp-stats, .pp-bio, .pp-highlights, .pp-hero, .ask-actions{
+    animation: none !important; opacity:1 !important; transform:none !important;
+  }
+}
 
 /* ---------- 4. FINAL ---------- */
 #screen-final{
