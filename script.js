@@ -13,20 +13,22 @@ const SLIDES = [
 
 // 2) Info halaman profil
 const PROFILE = {
-  name: "Kamu",
-  username: "@untuk.kamu",
-  bio: "satu-satunya notifikasi yang selalu kutunggu.",
-  following: 12,
-  followers: 1,
-  likes: "99+",
-  initial: "K", // huruf yang muncul di foto profil bila tidak pakai foto asli
-  question: "Wanna be my girlfriend?" // pesan utama di halaman profil
+  name: "Salzabila Ferina",
+  username: "@salzabilaferina",
+  bio: "just a little piece of your favorite person ♡",
+  following: 120,
+  followers: "1.2K",
+  likes: "8.5K",
+  initial: "S", // huruf yang muncul di foto profil bila tidak pakai foto asli
+  question: "Wanna be my girlfriend" // pesan utama di halaman profil
 };
 
 // 2b) Sorotan/highlight di bawah bio (gaya TikTok/Instagram). Boleh diisi
 //     lebih dari satu — tinggal tambah baris baru di array ini.
 const HIGHLIGHTS = [
-  { image: "image/cantik.png", title: "kamu" }
+  { image: "image/cantik.png", title: "Us" },
+  { image: "image/cantik.png", title: "Memories" },
+  { image: "image/cantik.png", title: "Favorite" }
 ];
 
 // 3) Teks halaman terakhir setelah menekan "Terima"
