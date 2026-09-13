@@ -74,8 +74,16 @@
 
 <!-- ============== 0. KENALAN DULU (monster lucu, 10 pertanyaan) ============== -->
 <section id="screen-monster" class="screen active">
+  <div class="mc-deco" aria-hidden="true">
+    <span class="mc-deco-item mc-deco-1"></span>
+    <span class="mc-deco-item mc-deco-2"></span>
+    <span class="mc-deco-item mc-deco-3"></span>
+    <span class="mc-deco-item mc-deco-4"></span>
+  </div>
   <div class="mc-wrap">
+    <div class="mc-eyebrow"> Kenalan Dulu, Yuk!</div>
     <div class="mc-monster-stage">
+      <div class="mc-monster-glow"></div>
       <div class="mc-monster" id="mc-monster" aria-hidden="true">
         <svg viewBox="0 0 200 200" width="100%" height="100%">
           <ellipse class="mc-shadow" cx="100" cy="182" rx="46" ry="8"/>
@@ -104,6 +112,7 @@
     </div>
 
     <div class="mc-dialogue-box" id="mc-dialogue-box">
+      <div class="mc-nametag"> Si Kecil</div>
       <div class="mc-typing-dots" id="mc-typing-dots" hidden><span></span><span></span><span></span></div>
       <div class="mc-text" id="mc-text"></div>
       <div class="mc-answer-wrap" id="mc-answer-wrap" hidden>
@@ -116,7 +125,7 @@
   <div class="mc-toast" id="mc-toast" role="status" aria-live="polite"></div>
 
   <div class="photo-loading" id="mc-loading">
-    <div class="loading-spinner"></div>
+    <img src="image/bunga-1.png" class="loading-spinner" alt="">
     <div class="loading-text">MENYIAPKAN BUKUNYA...</div>
     <div class="loading-bar"><div class="loading-bar-fill" id="mc-loading-bar-fill"></div></div>
   </div>
@@ -210,7 +219,7 @@
 
 <!-- ============== LOADING PHOTOSHOOT (5 detik) ============== -->
 <div class="photo-loading" id="photo-loading">
-  <div class="loading-spinner" aria-hidden="true"></div>
+  <img src="image/bunga-1.png" class="loading-spinner" alt="" aria-hidden="true">
   <div class="loading-text">MENYIAPKAN KAMERA…</div>
   <div class="loading-bar"><div class="loading-bar-fill" id="loading-bar-fill"></div></div>
 </div>
@@ -219,14 +228,20 @@
 <section id="screen-photoshoot" class="screen">
   <div class="ps-wrap">
     <div class="ps-header">
+      <div class="ps-header-badge"> Sesi Foto Berdua</div>
       <div class="ps-title">Photoshoot Kita</div>
       <div class="ps-sub">pilih gaya kamu, lalu ambil beberapa foto manis</div>
     </div>
 
     <div class="ps-stage" id="ps-stage">
       <video class="ps-video" id="ps-video" autoplay playsinline muted></video>
+      <div class="ps-corner-tl"></div>
+      <div class="ps-corner-tr"></div>
+      <div class="ps-corner-bl"></div>
+      <div class="ps-corner-br"></div>
       <div class="ps-shots-dots" id="ps-shots-dots"></div>
-      <div class="ps-countdown" id="ps-countdown"></div>
+      <div class="ps-countdown" id="ps-countdown"><div class="ps-countdown-ring"><span id="ps-countdown-num"></span></div></div>
+      <div class="ps-flash" id="ps-flash" aria-hidden="true"></div>
       <div class="ps-cam-error" id="ps-cam-error">
         <p>Tidak bisa mengakses kamera.<br>Periksa izin kamera di browser kamu, lalu coba lagi.</p>
         <button id="ps-cam-retry" type="button">Coba Lagi</button>
@@ -234,9 +249,13 @@
     </div>
 
     <div class="ps-result" id="ps-result">
+      <div class="ps-result-heading">
+        <div class="ps-title">Cantiknyaaa~</div>
+      </div>
       <div class="ps-strip-frame">
         <canvas class="ps-strip-canvas" id="ps-strip-canvas"></canvas>
       </div>
+      <div class="ps-result-caption">kenangan kecil kita hari ini </div>
       <div class="ps-result-actions">
         <button id="ps-download" type="button">Unduh Hasil</button>
         <button id="ps-retake" type="button">Ulangi</button>

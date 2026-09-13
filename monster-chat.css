@@ -5,12 +5,31 @@
 
 #screen-monster{
   background:
-    radial-gradient(circle at 14% 10%, rgba(205,165,94,0.14), transparent 46%),
-    radial-gradient(circle at 88% 90%, rgba(217,152,166,0.18), transparent 52%),
+    radial-gradient(circle at 14% 10%, rgba(205,165,94,0.16), transparent 46%),
+    radial-gradient(circle at 88% 90%, rgba(217,152,166,0.2), transparent 52%),
+    radial-gradient(circle at 50% 50%, rgba(205,165,94,0.05), transparent 60%),
     var(--cream);
   flex-direction: column;
   gap: clamp(10px, 3vh, 22px);
   overflow-y: auto;
+}
+
+/* ---------- Dekorasi ambient (bintang/sparkle melayang) ---------- */
+.mc-deco{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.mc-deco-item{
+  position:absolute;
+  font-size: clamp(16px, 3vw, 22px);
+  opacity:.55;
+  animation: mcDecoFloat 6s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(58,37,48,0.15));
+}
+.mc-deco-1{ top:10%; left:8%; animation-duration:5.5s; }
+.mc-deco-2{ top:20%; right:10%; animation-duration:7s; animation-delay:.6s; }
+.mc-deco-3{ bottom:16%; left:12%; animation-duration:6.4s; animation-delay:1.2s; }
+.mc-deco-4{ bottom:24%; right:14%; animation-duration:5.8s; animation-delay:.3s; }
+@keyframes mcDecoFloat{
+  0%,100%{ transform: translateY(0) rotate(0deg); opacity:.4; }
+  50%{ transform: translateY(-16px) rotate(12deg); opacity:.75; }
 }
 
 .mc-wrap{
@@ -21,19 +40,50 @@
   align-items: center;
   gap: clamp(6px, 2vh, 14px);
   margin: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.mc-eyebrow{
+  display:inline-flex; align-items:center; gap:6px;
+  background: var(--paper);
+  border: 1.5px solid rgba(205,165,94,0.4);
+  color: var(--plum);
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-family:'Jost', sans-serif;
+  font-weight:600;
+  font-size: 12.5px;
+  letter-spacing:.2px;
+  box-shadow: var(--shadow-1);
+  margin-bottom: 2px;
+  animation: mcFieldIn .5s cubic-bezier(.3,1,.4,1) both;
 }
 
 /* ---------- MONSTER ---------- */
 .mc-monster-stage{
+  position:relative;
   width: clamp(120px, 34vw, 170px);
   height: clamp(120px, 34vw, 170px);
   animation: mcPopIn .6s cubic-bezier(.3,1.2,.4,1) both;
+}
+.mc-monster-glow{
+  position:absolute; inset: -14%;
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(205,165,94,0.35), rgba(217,152,166,0.15) 55%, transparent 75%);
+  animation: mcGlowPulse 3.2s ease-in-out infinite;
+  z-index:0;
+}
+@keyframes mcGlowPulse{
+  0%,100%{ transform: scale(.94); opacity:.7; }
+  50%{ transform: scale(1.06); opacity:1; }
 }
 @keyframes mcPopIn{
   0%{ opacity:0; transform: translateY(24px) scale(.7); }
   100%{ opacity:1; transform: translateY(0) scale(1); }
 }
 .mc-monster{
+  position:relative; z-index:1;
   width:100%; height:100%;
   animation: mcBob 3.2s ease-in-out infinite;
   filter: drop-shadow(0 14px 18px rgba(58,37,48,0.22));
@@ -67,10 +117,10 @@
 /* ---------- DIALOGUE BOX (gaya kotak percakapan game) ---------- */
 .mc-dialogue-box{
   width:100%;
-  background: var(--paper);
+  background: linear-gradient(180deg, var(--paper), #FFF9F0);
   border: 3px solid var(--gold);
   border-radius: 22px;
-  box-shadow: var(--shadow-2), inset 0 0 0 4px rgba(255,255,255,0.5);
+  box-shadow: var(--shadow-2), inset 0 0 0 4px rgba(255,255,255,0.6);
   padding: clamp(18px, 4vw, 26px) clamp(18px, 5vw, 30px);
   position: relative;
   min-height: 128px;
@@ -88,6 +138,19 @@
   border-top:3px solid var(--gold);
   transform: rotate(45deg);
   border-radius: 4px 0 0 0;
+}
+.mc-nametag{
+  position:absolute;
+  top:-15px; right: 20px;
+  background: linear-gradient(135deg, var(--rose-dark), #8F4A5C);
+  color:#fff;
+  font-family:'Jost', sans-serif;
+  font-weight:600;
+  font-size: 11.5px;
+  letter-spacing:.3px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(173,98,116,0.35);
 }
 
 .mc-typing-dots{ display:flex; gap:6px; align-items:center; height:14px; }
@@ -154,7 +217,7 @@
 }
 .mc-btn{
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   font-family:'Jost', sans-serif;
   font-weight:500;
   font-size: 13.5px;
@@ -167,6 +230,16 @@
   box-shadow: 0 10px 22px rgba(173,98,116,0.32);
   transition: transform .18s cubic-bezier(.3,1.4,.4,1), box-shadow .2s ease, opacity .2s ease;
 }
+.mc-btn::after{
+  content:"";
+  position:absolute; top:0; left:-60%;
+  width:40%; height:100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg);
+  transition: left .5s ease;
+}
+.mc-btn:hover::after{ left:120%; }
+.mc-btn.mc-btn-ghost::after{ display:none; }
 .mc-btn:hover{ transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 26px rgba(173,98,116,0.4); }
 .mc-btn:active{ transform: translateY(0) scale(.97); }
 .mc-btn.mc-btn-ghost{

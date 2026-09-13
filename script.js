@@ -616,6 +616,8 @@ function playAcceptBurst(callback){
   const psVideo = document.getElementById('ps-video');
   const psStage = document.getElementById('ps-stage');
   const psCountdown = document.getElementById('ps-countdown');
+  const psCountdownNum = document.getElementById('ps-countdown-num');
+  const psFlash = document.getElementById('ps-flash');
   const psError = document.getElementById('ps-cam-error');
   const psDots = document.getElementById('ps-shots-dots');
   const psResult = document.getElementById('ps-result');
@@ -718,11 +720,17 @@ function playAcceptBurst(callback){
 
   async function runCountdown(n){
     for (let i = n; i > 0; i--) {
-      psCountdown.textContent = i;
+      psCountdownNum.textContent = i;
       psCountdown.classList.add('show');
       await sleep(700);
     }
     psCountdown.classList.remove('show');
+  }
+  function flashShutter(){
+    if (!psFlash) return;
+    psFlash.classList.remove('flash');
+    void psFlash.offsetWidth; // reset animasi supaya bisa diulang berturut-turut
+    psFlash.classList.add('flash');
   }
 
   function applyVintageLook(ctx, w, h){
@@ -821,6 +829,7 @@ function playAcceptBurst(callback){
     shots = [];
     for (let i = 0; i < selectedCount; i++) {
       await runCountdown(3);
+      flashShutter();
       const frame = captureFrame();
       shots.push(frame);
       const dots = Array.from(psDots.children);

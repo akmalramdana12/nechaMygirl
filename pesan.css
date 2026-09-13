@@ -32,12 +32,20 @@ button{ font-family:inherit; cursor:pointer; }
   border:1px solid var(--line);
   border-radius:14px;
   padding: 14px 18px;
-  cursor:pointer;
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .pj-row:hover{ transform: translateY(-2px); box-shadow: 0 10px 22px rgba(58,37,48,0.1); }
+.pj-row-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; cursor:pointer; }
 .pj-row-name{ font-weight:600; font-size:14.5px; }
 .pj-row-date{ font-size:12px; color: var(--plum-soft); white-space:nowrap; }
+.pj-row-delete{
+  flex-shrink:0; width:34px; height:34px; border-radius:50%;
+  border:1px solid var(--line); background:var(--cream);
+  display:flex; align-items:center; justify-content:center;
+  transition: background .18s ease, transform .18s ease;
+}
+.pj-row-delete svg{ width:15px; height:15px; fill:none; stroke:#B3455B; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.pj-row-delete:hover{ background:#FBE1E6; transform: translateY(-1px); }
 
 .pj-detail-overlay{
   position:fixed; inset:0; background: rgba(58,37,48,0.45);
@@ -73,6 +81,37 @@ button{ font-family:inherit; cursor:pointer; }
   line-height:1.55;
   color: var(--plum);
 }
+.pj-delete-entry{
+  display:block; width:100%; margin-top:10px;
+  padding: 12px 0; border-radius:14px;
+  border:1.5px solid #E3A9B4; background:#FDF1F3; color:#B3455B;
+  font-size:13px; font-weight:600; letter-spacing:.2px;
+  transition: background .18s ease, transform .18s ease;
+}
+.pj-delete-entry:hover{ background:#FBE1E6; transform: translateY(-1px); }
+
+/* ---------- Popup konfirmasi hapus ---------- */
+.pj-confirm-overlay{
+  position:fixed; inset:0; z-index:30;
+  background: rgba(58,37,48,0.5);
+  display:none; align-items:center; justify-content:center;
+  padding: 20px;
+}
+.pj-confirm-overlay.show{ display:flex; }
+.pj-confirm-card{
+  background: var(--paper);
+  border-radius:18px;
+  max-width:360px; width:100%;
+  padding: 26px 24px;
+  text-align:center;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+}
+.pj-confirm-text{ font-size:14px; line-height:1.6; color: var(--plum); margin: 0 0 20px; }
+.pj-confirm-actions{ display:flex; gap:10px; }
+.pj-confirm-actions button{ flex:1; padding: 12px 0; border-radius:12px; font-size:13.5px; font-weight:600; border:1.5px solid transparent; }
+.pj-confirm-cancel{ background: var(--cream); border-color: var(--line) !important; color: var(--plum-soft); }
+.pj-confirm-ok{ background:#B3455B; color:#fff; }
+.pj-confirm-ok:hover{ background:#9C3A4D; }
 
 @media (max-width:480px){
   .pj-detail-card{ padding: 24px 18px 28px; }

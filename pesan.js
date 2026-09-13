@@ -44,8 +44,19 @@ function renderList() {
     const row = document.createElement('div');
     row.className = 'pj-row';
     const name = entry.answers && entry.answers.nama ? entry.answers.nama : '(tanpa nama)';
-    row.innerHTML = `<span class="pj-row-name">${escapeHtml(name)}</span><span class="pj-row-date">${fmtDate(entry.date)}</span>`;
-    row.addEventListener('click', () => openDetail(entry));
+    row.innerHTML = `
+      <span class="pj-row-main">
+        <span class="pj-row-name">${escapeHtml(name)}</span>
+        <span class="pj-row-date">${fmtDate(entry.date)}</span>
+      </span>
+      <button class="pj-row-delete" type="button" aria-label="Hapus jawaban dari ${escapeHtml(name)}">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0h10l-1 13a1 1 0 01-1 1H8a1 1 0 01-1-1L6 7z"/></svg>
+      </button>`;
+    row.querySelector('.pj-row-main').addEventListener('click', () => openDetail(entry));
+    row.querySelector('.pj-row-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      askDelete(entry.id, name);
+    });
     listEl.appendChild(row);
   });
 }
@@ -74,6 +85,9 @@ function openDetail(entry) {
 
   inner.innerHTML = html;
   document.getElementById('pj-detail-overlay').classList.add('show');
+
+  const deleteBtn = document.getElementById('pj-delete-entry');
+  deleteBtn.onclick = () => askDelete(entry.id, name, true);
 }
 
 document.getElementById('pj-close').addEventListener('click', () => {
@@ -81,6 +95,44 @@ document.getElementById('pj-close').addEventListener('click', () => {
 });
 document.getElementById('pj-detail-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'pj-detail-overlay') e.currentTarget.classList.remove('show');
+});
+
+// ---- Hapus jawaban ----
+let pendingDeleteId = null;
+let pendingCloseDetail = false;
+
+function askDelete(id, name, fromDetail) {
+  pendingDeleteId = id;
+  pendingCloseDetail = !!fromDetail;
+  document.getElementById('pj-confirm-text').textContent =
+    `Yakin ingin menghapus jawaban dari "${name}"? Tindakan ini tidak bisa dibatalkan.`;
+  document.getElementById('pj-confirm-overlay').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('pj-confirm-overlay').classList.remove('show');
+  pendingDeleteId = null;
+}
+
+function deleteEntry(id) {
+  try {
+    const list = JSON.parse(localStorage.getItem(MC_STORAGE_KEY) || '[]');
+    const filtered = list.filter((e) => e.id !== id);
+    localStorage.setItem(MC_STORAGE_KEY, JSON.stringify(filtered));
+  } catch (e) { /* abaikan */ }
+}
+
+document.getElementById('pj-confirm-cancel').addEventListener('click', closeConfirm);
+document.getElementById('pj-confirm-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'pj-confirm-overlay') closeConfirm();
+});
+document.getElementById('pj-confirm-ok').addEventListener('click', () => {
+  if (pendingDeleteId !== null) {
+    deleteEntry(pendingDeleteId);
+    if (pendingCloseDetail) document.getElementById('pj-detail-overlay').classList.remove('show');
+    renderList();
+  }
+  closeConfirm();
 });
 
 renderList();
