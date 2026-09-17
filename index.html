@@ -6,13 +6,13 @@
 <title>Untukmu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Slackey&family=Yellowtail&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&family=Slackey&family=Yellowtail&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="monster-chat.css">
 </head>
 <body>
 
-<!-- ============== MUSIC PLAYER (di atas buku, gaya Spotify — versi upgrade) ============== -->
+<!-- ============== MUSIC PLAYER (di atas buku, gaya Spotify  versi upgrade) ============== -->
 <div id="music-player" class="mp-hidden">
   <button class="mp-chevron" id="mp-chevron" aria-label="Buka tampilan pemutar musik" type="button">
     <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -41,7 +41,7 @@
   </div>
 </div>
 
-<!-- ============== NOW PLAYING — popup ala iPhone ============== -->
+<!-- ============== NOW PLAYING  popup ala iPhone ============== -->
 <div class="mp-sheet-overlay" id="mp-sheet-overlay">
   <div class="mp-sheet" id="mp-sheet">
     <div class="mp-sheet-handle"></div>
@@ -74,11 +74,17 @@
 
 <!-- ============== 0. KENALAN DULU (monster lucu, 10 pertanyaan) ============== -->
 <section id="screen-monster" class="screen active">
+  <div class="mc-bg-blobs" aria-hidden="true">
+    <span class="mc-blob mc-blob-1"></span>
+    <span class="mc-blob mc-blob-2"></span>
+    <span class="mc-blob mc-blob-3"></span>
+  </div>
   <div class="mc-deco" aria-hidden="true">
     <span class="mc-deco-item mc-deco-1"></span>
     <span class="mc-deco-item mc-deco-2"></span>
     <span class="mc-deco-item mc-deco-3"></span>
     <span class="mc-deco-item mc-deco-4"></span>
+    <span class="mc-deco-item mc-deco-5"></span>
   </div>
   <div class="mc-wrap">
     <div class="mc-eyebrow"> Kenalan Dulu, Yuk!</div>
@@ -115,7 +121,12 @@
       <div class="mc-nametag"> Si Kecil</div>
       <div class="mc-typing-dots" id="mc-typing-dots" hidden><span></span><span></span><span></span></div>
       <div class="mc-text" id="mc-text"></div>
+      <div class="mc-progress" id="mc-progress" hidden>
+        <span class="mc-progress-label">Pertanyaan</span>
+        <span class="mc-progress-count"><span id="mc-progress-current">01</span><span class="mc-progress-sep">/</span><span id="mc-progress-total">10</span></span>
+      </div>
       <div class="mc-answer-wrap" id="mc-answer-wrap" hidden>
+        <label for="mc-answer-input" class="mc-sr-only">Jawabanmu</label>
         <input type="text" id="mc-answer-input" class="mc-answer-input" placeholder="ketik jawabanmu di sini..." autocomplete="off">
       </div>
       <div class="mc-buttons" id="mc-buttons"></div>
@@ -131,44 +142,28 @@
   </div>
 </section>
 
-<!-- ============== 1. COVER BUKU ============== -->
+<!-- ============== 1. COVER NOTEBOOK ============== -->
 <section id="screen-cover" class="screen">
   <div>
-    <button class="book" id="book" aria-label="Buka buku">
+    <button class="book" id="book" aria-label="Buka notebook">
       <div class="cover-front">
-        <div class="cover-ornament" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-9.5-9C.7 8.4 2 4.8 5.4 4.1 7.7 3.6 10 4.8 12 7c2-2.2 4.3-3.4 6.6-2.9 3.4.7 4.7 4.3 2.9 7.9C19 16.4 12 21 12 21z"/></svg>
-        </div>
-        <div class="cover-title" id="cover-title">Untuk Kamu,<br>Yang Sering Kupikirkan</div>
-        <div class="cover-dedication">
-          <div class="cover-dedication-line">From: <strong id="cover-from">Akmal rd</strong></div>
-          <div class="cover-dedication-line">To: <strong id="cover-to">Salzabila Ferina</strong></div>
-        </div>
-        <div class="cover-sub" id="cover-sub">ketuk buku ini untuk membukanya</div>
+        <img class="cover-photo" src="image/covernote.png" alt="Cover buku" draggable="false">
+        <span class="cover-tap-hint" id="cover-sub">ketuk untuk membukanya</span>
       </div>
     </button>
-    <div class="cover-hint">sentuh untuk membuka</div>
   </div>
 </section>
 
-<!-- ============== 2. ISI BUKU (5 SLIDE) ============== -->
+<!-- ============== 2. ISI NOTEBOOK — DIGITAL SCRAPBOOK (vertical scroll) ============== -->
 <section id="screen-book" class="screen">
-  <div class="book-block">
-    <div class="stack-layer layer-2"></div>
-    <div class="stack-layer layer-1"></div>
-    <div class="pages-wrap" id="pages-wrap">
-      <div class="spine-shadow"></div>
-    </div>
-    <div class="dots" id="dots"></div>
-  </div>
-
-  <button class="nav-btn" id="btn-prev" aria-label="Halaman sebelumnya">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
-  </button>
-  <button class="nav-btn" id="btn-next" aria-label="Halaman selanjutnya">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-  </button>
+  <div class="scrapbook" id="scrapbook"></div>
 </section>
+
+<!-- ============== OVERLAY COUNTDOWN DRAMATIS (3-2-1) SEBELUM KE HALAMAN PROFIL ============== -->
+<div class="nb-countdown-overlay" id="nb-countdown-overlay" aria-hidden="true">
+  <span class="nb-countdown-number" id="nb-countdown-number"></span>
+</div>
+
 
 <!-- ============== 3. PROFIL ============== -->
 <section id="screen-profile" class="screen">
@@ -232,7 +227,7 @@
   </button>
   <div class="final-inner">
     <div class="final-text" id="final-text">Yeyy, diterima<br>makasih sayangku cantik </div>
-    <div class="final-sub">— T A M A T —</div>
+    <div class="final-sub"> T A M A T </div>
     <div>
       <button class="btn-photo" id="btn-photo" type="button"> Photoshoot sini cantik</button>
     </div>
@@ -242,7 +237,7 @@
 <!-- ============== LOADING PHOTOSHOOT (5 detik) ============== -->
 <div class="photo-loading" id="photo-loading">
   <img src="image/bunga-1.png" class="loading-spinner" alt="" aria-hidden="true">
-  <div class="loading-text">MENYIAPKAN KAMERA…</div>
+  <div class="loading-text">MENYIAPKAN KAMERA</div>
   <div class="loading-bar"><div class="loading-bar-fill" id="loading-bar-fill"></div></div>
 </div>
 

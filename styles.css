@@ -69,260 +69,403 @@ button{ font-family:inherit; cursor:pointer; }
   cursor:pointer;
   transform-style:preserve-3d;
   transition: transform 1.1s var(--ease-silk);
+  animation: nbIdleFloat 4.5s ease-in-out infinite;
 }
-.book:hover .cover-front{ box-shadow: var(--shadow-3), inset -6px 0 16px rgba(0,0,0,0.28); transform: translateY(-2px); }
-.book.opening{ transform: translateX(18%) rotateY(-18deg); }
-.cover-front{
+.book.opening{ animation:none; transform: translateX(18%) rotateY(-18deg); }
+@keyframes nbIdleFloat{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-7px); } }
+.book:hover{ animation-play-state: paused; }
+.book:hover .cover-front{
   position:absolute; inset:0;
-  border-radius: 6px 16px 16px 6px;
-  background:
-    linear-gradient(155deg, #5E3B44 0%, var(--plum) 52%, #2B1A20 100%);
-  box-shadow: var(--shadow-2), inset -6px 0 16px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(205,165,94,0.10);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:20px;
-  padding: 30px;
+  border-radius: 14px 22px 22px 14px;
+  overflow:hidden;
+  box-shadow: var(--shadow-2), inset 0 0 0 1px rgba(205,165,94,0.25);
   transform-origin: left center;
   transform-style: preserve-3d;
   transition: transform 1.15s var(--ease-silk), box-shadow .3s ease, transform .3s ease;
   border: 1px solid rgba(205,165,94,0.4);
 }
 .book.opening .cover-front{ transform: rotateY(-150deg); }
-.cover-ornament{
-  width:48px; height:48px;
-  border:1px solid var(--gold-soft);
-  border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow: 0 0 0 5px rgba(205,165,94,0.08);
+.cover-photo{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  display:block;
+  pointer-events:none;
+  user-select:none;
 }
-.cover-ornament svg{ width:20px; height:20px; fill:var(--gold-soft); }
-.cover-title{
-  font-family:'Cormorant Garamond', serif;
-  font-style:italic;
-  font-weight:500;
-  font-size: clamp(24px, 5vw, 31px);
-  color:#F5E9DA;
-  text-align:center;
-  line-height:1.32;
-  letter-spacing:.3px;
-}
-.cover-sub{
-  font-size:13px;
-  letter-spacing:.6px;
-  color: rgba(245,233,218,0.75);
-  text-align:center;
-}
-.cover-dedication{
-  display:flex; flex-direction:column; gap:3px;
-  align-items:center;
-  margin: 2px 0 4px;
-  padding: 10px 18px;
-  border-top: 1px solid rgba(205,165,94,0.35);
-  border-bottom: 1px solid rgba(205,165,94,0.35);
-}
-.cover-dedication-line{
+.cover-tap-hint{
+  position:absolute; left:50%; bottom: 16px; transform:translateX(-50%);
+  padding: 6px 16px;
+  border-radius:20px;
+  background: rgba(58,37,48,0.42);
+  backdrop-filter: blur(2px);
   font-size:12.5px;
-  letter-spacing:.4px;
-  color: rgba(245,233,218,0.9);
+  letter-spacing:.6px;
+  color:#fff;
+  animation: pulseHint 2.6s ease-in-out infinite, coverHintFloat 2.6s ease-in-out infinite;
 }
-.cover-dedication-line strong{
-  font-family:'Cormorant Garamond', serif;
-  font-style:italic;
-  font-weight:600;
-  font-size:15px;
-  color:#F5E9DA;
-  margin-left:5px;
-}
-.cover-hint{
-  position:absolute; bottom:-42px; left:0; right:0;
-  text-align:center;
-  font-size:13px;
-  color: var(--plum-soft);
-  opacity:.75;
-  animation: pulseHint 2.6s ease-in-out infinite;
-}
-@keyframes pulseHint{ 0%,100%{opacity:.4;} 50%{opacity:.95;} }
+@keyframes pulseHint{ 0%,100%{opacity:.55;} 50%{opacity:1;} }
+@keyframes coverHintFloat{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(3px); } }
 
-/* ---------- 2. ISI BUKU / SLIDES ---------- */
+/* ---------- 2. ISI BUKU — DIGITAL SCRAPBOOK (vertical scroll) ---------- */
 #screen-book{ padding:0; }
+#screen-book.active{ display:block; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
 
-.book-block{
+.scrapbook{
   position:relative;
-  width: var(--book-w);
-  height: var(--book-h);
-  max-height: 78svh;
-}
-.stack-layer{
-  position:absolute; inset:0;
-  background: var(--paper);
-  border:1px solid var(--line);
-  border-radius:10px;
-  box-shadow: var(--shadow-1);
-}
-.stack-layer.layer-2{ transform: translate(9px, 11px) rotate(0.4deg); z-index:0; opacity:.7; }
-.stack-layer.layer-1{ transform: translate(4px, 5px) rotate(0.2deg); z-index:1; opacity:.88; }
-
-.pages-wrap{
-  position:absolute; inset:0;
-  z-index:2;
-  perspective: 2000px;
-  border-radius:10px;
-}
-.spine-shadow{
-  position:absolute; inset:0;
-  z-index:8;
-  border-radius:10px;
-  pointer-events:none;
-  background: linear-gradient(90deg, rgba(43,26,32,0.22) 0%, rgba(43,26,32,0.07) 5%, transparent 12%);
-}
-.page{
-  position:absolute; inset:0;
+  width:100%;
+  min-height:100%;
+  padding: 14vh 18px 12vh;
   background:
-    radial-gradient(circle at 12% 8%, rgba(205,165,94,0.06), transparent 40%),
-    radial-gradient(circle at 92% 92%, rgba(217,152,166,0.05), transparent 42%),
-    var(--paper);
-  background-size: cover;
-  border-radius:10px;
-  box-shadow: var(--shadow-2);
-  border:1px solid var(--line);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center;
-  padding: clamp(28px, 8vh, 60px) clamp(20px, 6vw, 44px);
-  backface-visibility:hidden;
-  transform-origin: left center;
-  transform-style: preserve-3d;
-  will-change: transform;
-  opacity:1;
+    repeating-linear-gradient(128deg, rgba(58,37,48,0.012) 0 2px, transparent 2px 4px),
+    radial-gradient(circle at 10% 6%, rgba(205,165,94,0.10), transparent 40%),
+    radial-gradient(circle at 92% 14%, rgba(217,152,166,0.12), transparent 42%),
+    radial-gradient(circle at 8% 88%, rgba(217,152,166,0.10), transparent 40%),
+    var(--cream);
+  overflow:hidden;
 }
-.page::before{
+/* -- lapisan kertas dekoratif, bergeser sangat halus saat scroll (parallax ringan) -- */
+.scrapbook::before,
+.scrapbook::after{
   content:"";
-  position:absolute; inset:14px;
-  border:1px solid var(--line);
-  border-radius:6px;
-  pointer-events:none;
-}
-.page::after{
-  content:"";
-  position:absolute; right:0; bottom:0;
-  width:40px; height:40px;
-  pointer-events:none;
-  background: linear-gradient(135deg, transparent 52%, rgba(58,37,48,0.05) 53%, rgba(58,37,48,0.12) 100%);
-  border-radius: 0 0 10px 0;
-}
-.flip-shade{
-  position:absolute; inset:0;
-  border-radius:10px;
-  pointer-events:none;
-  opacity:0;
-  background: linear-gradient(100deg, rgba(22,12,15,0.4), rgba(22,12,15,0.05) 45%, transparent 70%);
-}
-.page-text{
-  font-family:'Cormorant Garamond', serif;
-  font-style:italic;
-  font-weight:500;
-  font-size: clamp(20px, 3.4vw, 27px);
-  line-height:1.58;
-  color: var(--plum);
-  max-width: 60ch;
-  white-space:pre-line;
-}
-.page-counter{
   position:absolute;
-  top: clamp(14px, 3vh, 22px);
-  right: clamp(18px, 4vw, 28px);
-  font-size:11.5px;
-  letter-spacing:1.4px;
-  color: var(--plum-soft);
-  opacity:.6;
-  z-index:1;
-}
-.page.is-current{ transform: rotateY(0deg); z-index:3; }
-.page.hidden-page{ display:none; }
-
-.page.flip-out-next{ z-index:6; animation: flipOutNext .85s var(--ease-silk) forwards; }
-.page.flip-out-prev{ z-index:6; animation: flipOutPrev .85s var(--ease-silk) forwards; }
-.page.flip-out-next .flip-shade,
-.page.flip-out-prev .flip-shade{ animation: flipShade .85s ease forwards; }
-
-@keyframes flipOutNext{
-  0%   { transform: rotateY(0deg)    translateZ(0); box-shadow: var(--shadow-2); }
-  45%  { transform: rotateY(-95deg)  translateZ(46px); box-shadow: 44px 28px 66px rgba(20,12,15,0.4); }
-  100% { transform: rotateY(-178deg) translateZ(0); box-shadow: var(--shadow-2); }
-}
-@keyframes flipOutPrev{
-  0%   { transform: rotateY(0deg)   translateZ(0); box-shadow: var(--shadow-2); }
-  45%  { transform: rotateY(95deg)  translateZ(46px); box-shadow: -44px 28px 66px rgba(20,12,15,0.4); }
-  100% { transform: rotateY(178deg) translateZ(0); box-shadow: var(--shadow-2); }
-}
-@keyframes flipShade{
-  0%{ opacity:0; }
-  40%{ opacity:1; }
-  70%{ opacity:.4; }
-  100%{ opacity:0; }
-}
-
-.dots{
-  position:absolute; left:50%; bottom:-34px; transform:translateX(-50%);
-  display:flex; gap:9px;
-  z-index:5;
-}
-.dot{ width:6px; height:6px; border-radius:50%; background: var(--line); transition: background .3s, transform .3s var(--ease-silk); }
-.dot.active{ background: var(--rose-dark); transform:scale(1.5); box-shadow: 0 0 0 4px rgba(173,98,116,0.16); }
-
-.nav-btn{
-  position:fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  bottom: auto;
-  width:52px; height:52px;
+  width:260px; height:260px;
   border-radius:50%;
-  border:none;
-  background: transparent;
-  box-shadow: none;
-  display:flex; align-items:center; justify-content:center;
-  transition: background .18s ease, opacity .2s ease;
-  z-index: 20;
+  pointer-events:none;
+  z-index:0;
+  will-change: transform;
 }
-.nav-btn:hover{ background: rgba(0,0,0,0.05); }
-.nav-btn:active{ background: rgba(0,0,0,0.08); }
-.nav-btn:disabled{ opacity:.25; cursor:default; background:transparent; }
-.nav-btn svg{ width:20px; height:20px; stroke: var(--plum); }
-#btn-prev{ left: clamp(6px, 3vw, 26px); }
-#btn-next{ right: clamp(6px, 3vw, 26px); }
+.scrapbook::before{
+  top:2%; right:-8%;
+  background: radial-gradient(circle, rgba(217,152,166,0.16), transparent 70%);
+  transform: translateY(var(--sb-parallax, 0px));
+}
+.scrapbook::after{
+  bottom:12%; left:-10%;
+  background: radial-gradient(circle, rgba(205,165,94,0.14), transparent 70%);
+  transform: translateY(calc(var(--sb-parallax, 0px) * -0.6));
+}
+
+.sb-section{
+  position:relative;
+  z-index:1;
+  max-width: 480px;
+  margin: 0 auto clamp(56px, 14vh, 96px);
+  opacity:0;
+  transform: translateY(28px);
+  transition: opacity .8s var(--ease-silk), transform .8s var(--ease-silk);
+}
+.sb-section.is-visible{ opacity:1; transform:translateY(0); }
+.sb-section:last-child{ margin-bottom:0; }
+
+/* ---------- Animasi granular per elemen begitu section-nya terlihat ---------- */
+.sb-section .sb-label,
+.sb-section .sb-caption,
+.sb-section .sb-text,
+.sb-section .sb-memory-tag{
+  opacity:0;
+  transform: translateY(16px);
+  transition: opacity .7s var(--ease-silk), transform .7s var(--ease-silk);
+}
+.sb-section.is-visible .sb-label{ transition-delay:.05s; }
+.sb-section.is-visible .sb-caption{ transition-delay:.15s; }
+.sb-section.is-visible .sb-text{ transition-delay:.25s; }
+.sb-section.is-visible .sb-memory-tag{ transition-delay:.55s; }
+.sb-section.is-visible .sb-label,
+.sb-section.is-visible .sb-caption,
+.sb-section.is-visible .sb-text,
+.sb-section.is-visible .sb-memory-tag{ opacity:1; transform:translateY(0); }
+
+.sb-section .sb-photo{
+  opacity:0;
+  transform: translateY(22px) rotate(0deg) scale(.92);
+  transition: opacity .65s cubic-bezier(.2,.9,.24,1), transform .65s cubic-bezier(.2,.9,.24,1);
+}
+.sb-section.is-visible .sb-photo{
+  opacity:1;
+  transform: translateY(0) rotate(var(--rot, -4deg)) scale(1);
+}
+/* foto kedua & ketiga pada kolase muncul menyusul, sedikit lebih lambat */
+.sb-collage-stage .sb-photo:nth-child(1),
+.sb-grid-stage .sb-photo:nth-child(1){ transition-delay:.05s; }
+.sb-collage-stage .sb-photo:nth-child(2),
+.sb-grid-stage .sb-photo:nth-child(2){ transition-delay:.22s; }
+.sb-collage-stage .sb-photo:nth-child(3),
+.sb-grid-stage .sb-photo:nth-child(3){ transition-delay:.38s; }
+
+/* sticky note muncul menyamping dari sisi terdekat, halus */
+.sb-section .sb-sticky-note{
+  opacity:0;
+  transform: translateX(26px) rotate(0deg);
+  transition: opacity .6s var(--ease-silk), transform .6s var(--ease-silk);
+  transition-delay:.3s;
+}
+.sb-section.is-visible .sb-sticky-note{ opacity:1; transform: translateX(0) rotate(2deg); }
+@media (min-width:640px){
+  .sb-section .sb-sticky-note{ transform: translateX(-26px) rotate(0deg); }
+  .sb-section.is-visible .sb-sticky-note{ transform: translateX(0) rotate(-2deg); }
+}
+
+/* doodle muncul perlahan, paling akhir */
+.sb-section .sb-doodle{
+  opacity:0;
+  transition: opacity 1.1s ease;
+  transition-delay:.6s;
+}
+.sb-section.is-visible .sb-doodle{ opacity:.5; }
+
+/* garis pembatas quote besar melebar dari tengah */
+.sb-section .sb-divider{
+  transform: scaleX(0);
+  transition: transform .6s var(--ease-silk);
+  transition-delay:.1s;
+}
+.sb-section.is-visible .sb-divider{ transform: scaleX(1); }
+.sb-section .sb-divider.bottom{ transition-delay:.5s; }
 
 @media (prefers-reduced-motion: reduce){
-  .page.flip-out-next, .page.flip-out-prev{ animation: none !important; transform: rotateY(0deg) !important; opacity:0; }
+  .sb-section,
+  .sb-section .sb-label, .sb-section .sb-caption, .sb-section .sb-text,
+  .sb-section .sb-memory-tag, .sb-section .sb-photo, .sb-section .sb-sticky-note,
+  .sb-section .sb-doodle, .sb-section .sb-divider{ transition:none !important; transform:none !important; opacity:1 !important; }
+  .scrapbook::before, .scrapbook::after{ transform:none !important; }
 }
 
+.sb-label{
+  display:inline-block;
+  font-family:'Caveat', cursive; font-weight:600;
+  font-size:15px; color: var(--rose-dark);
+  margin-bottom:10px;
+  transform:rotate(-2deg);
+}
+.sb-text{
+  font-family:'Cormorant Garamond', serif;
+  font-style:italic; font-weight:500;
+  font-size: clamp(19px, 4vw, 24px);
+  line-height:1.62;
+  color: var(--plum);
+  white-space:pre-line;
+  max-width: 40ch;
+}
+.sb-caption{
+  font-family:'Caveat', cursive; font-weight:600;
+  font-size:15px; color: var(--rose-dark);
+  transform:rotate(-1.5deg);
+}
+
+/* -- foto ala polaroid, ditempel pakai washi tape -- */
+.sb-photo{
+  position:relative;
+  width: clamp(140px, 42vw, 210px);
+  box-shadow: var(--shadow-2);
+  transform: rotate(var(--rot, -4deg));
+  background:#fff;
+  padding: 8px 8px 22px;
+  border-radius:3px;
+}
+.sb-photo img{ width:100%; aspect-ratio:4/5; object-fit:cover; display:block; border-radius:2px; }
+.sb-photo::before,.sb-photo::after{
+  content:""; position:absolute; width:44px; height:17px;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.65) 0 5px, rgba(205,165,94,0.4) 5px 10px);
+  box-shadow: 0 2px 4px rgba(58,37,48,0.14);
+  opacity:.92;
+}
+.sb-photo::before{ top:-8px; left:-9px; transform:rotate(-40deg); }
+.sb-photo::after{ bottom:16px; right:-9px; transform:rotate(48deg); }
+
+/* -- Bagian 1: foto utama + tulisan kecil -- */
+.sb-photo-note{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:16px; }
+.sb-photo-note .sb-photo{ margin:0 auto; }
+
+/* -- Bagian 2: beberapa polaroid saling overlap -- */
+.sb-polaroid-collage{ text-align:center; }
+.sb-collage-stage{
+  position:relative;
+  height: clamp(200px, 46vw, 260px);
+  margin: 0 auto 22px;
+  max-width:320px;
+}
+.sb-collage-stage .sb-photo{ position:absolute; }
+.sb-collage-stage .sb-photo.p1{ left:2%; top:6%; z-index:1; }
+.sb-collage-stage .sb-photo.p2{ right:0; top:0; z-index:2; }
+.sb-collage-stage .sb-photo.p3{ left:20%; bottom:0; z-index:3; width: clamp(110px, 32vw, 150px); }
+.sb-polaroid-collage .sb-text{ margin:0 auto; text-align:center; }
+
+/* -- Bagian 3: quote besar dengan dekorasi kecil -- */
+.sb-quote-big{ text-align:center; }
+.sb-quote-big .sb-divider{
+  width:46px; height:1px; background: var(--line);
+  margin: 0 auto 18px;
+}
+.sb-quote-big .sb-text{
+  font-size: clamp(23px, 5.4vw, 30px);
+  line-height:1.7;
+  max-width: 24ch;
+  margin: 0 auto;
+}
+.sb-quote-big .sb-divider.bottom{ margin: 18px auto 0; }
+
+/* -- Bagian 4: foto besar + sticky note -- */
+.sb-photo-sticky{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.sb-photo-sticky .sb-photo{ width: clamp(190px, 56vw, 250px); }
+.sb-sticky-note{
+  position:relative;
+  max-width: 250px;
+  margin-top: 6px;
+  padding: 16px 18px 20px;
+  background: linear-gradient(180deg, #FFF3C8, #FCE7A6);
+  box-shadow: var(--shadow-1);
+  transform: rotate(2deg);
+  font-family:'Caveat', cursive; font-weight:600;
+  font-size: 18px; line-height:1.4;
+  color:#5C4A22;
+}
+.sb-sticky-note::before{
+  content:""; position:absolute; top:-8px; left:50%; transform:translateX(-50%) rotate(-3deg);
+  width:44px; height:16px;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.6) 0 5px, rgba(205,165,94,0.4) 5px 10px);
+  box-shadow: 0 2px 4px rgba(58,37,48,0.14);
+}
+
+/* -- Bagian 5: kolase beberapa foto kecil -- */
+.sb-collage-grid{ text-align:center; }
+.sb-grid-stage{
+  display:flex; justify-content:center; align-items:flex-end; gap: 12px;
+  flex-wrap:wrap;
+}
+.sb-grid-stage .sb-photo{ width: clamp(90px, 26vw, 120px); }
+.sb-collage-grid .sb-caption{ display:block; margin-top:16px; }
+
+/* -- Bagian 6: teks memori + foto kecil -- */
+.sb-memory-text{ text-align:center; }
+.sb-memory-text .sb-photo{ width: clamp(96px, 26vw, 120px); margin: 18px auto 0; transform: rotate(4deg); }
+.sb-memory-tag{
+  display:inline-block; margin-top:14px;
+  padding: 5px 14px;
+  background: rgba(255,255,255,0.75);
+  border: 1px dashed rgba(173,98,116,0.4);
+  border-radius: 4px;
+  font-family:'Caveat', cursive; font-weight:600;
+  font-size: 14px; color: var(--rose-dark);
+  transform: rotate(-3deg);
+  box-shadow: var(--shadow-1);
+}
+
+/* -- dekorasi kecil (heart / star / sparkle) tersebar secukupnya -- */
+.sb-doodle{
+  position:absolute; z-index:1;
+  font-size:19px; color: var(--rose-dark); opacity:.5;
+}
+
+/* -- penutup scrapbook: reuse gaya nb-closing / nb-red-btn -- */
+.sb-closing{ text-align:center; margin-bottom:0 !important; }
+.sb-closing .sb-text{
+  font-size: clamp(17px, 3.2vw, 21px);
+  color: var(--plum-soft);
+  max-width: 34ch;
+  margin: 0 auto;
+}
+
+@media (min-width:640px){
+  .sb-photo-sticky{ flex-direction:row; justify-content:center; align-items:center; gap:26px; text-align:left; }
+  .sb-sticky-note{ transform: rotate(-2deg); margin-top:0; }
+}
+@media (min-width:900px){
+  .scrapbook{ padding-top:12vh; }
+  .sb-section{ max-width:540px; }
+}
 @media (max-height: 560px){
   .book{ height: clamp(220px, 60svh, 340px); }
-  .cover-front{ padding: 18px; gap:12px; }
-  .book-block{ height: clamp(220px, 60svh, 340px); }
-  .nav-btn{ width:44px; height:44px; }
-  #btn-prev{ left:6px; }
-  #btn-next{ right:6px; }
-  #btn-tekan{ bottom:22px; }
-}
-@media (max-width: 380px){
-  .cover-title{ font-size:20px; }
-  .nav-btn{ width:44px; height:44px; }
+  .nb-closing{ margin-top:14px; }
+  .nb-red-btn{ width:52px; height:52px; }
 }
 
-#btn-tekan{
-  position:absolute; left:50%; bottom:42px; transform:translateX(-50%) translateY(14px);
-  background: linear-gradient(135deg, var(--rose-dark), #8F4A5C);
-  color:#FBF0EA;
-  border:none;
-  padding: 14px 36px;
-  border-radius: 30px;
-  font-size:14px;
-  letter-spacing:.5px;
-  box-shadow: 0 14px 30px rgba(173,98,116,0.4);
-  opacity:0;
+/* ---------- Penutup halaman terakhir notebook: "Tekan Ini" + tombol merah ---------- */
+.page-closing{ text-align:center; }
+.nb-closing{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  margin-top: clamp(18px, 5vh, 30px);
+  opacity:0; transform: translateY(14px);
   pointer-events:none;
-  transition: opacity .7s ease, transform .35s var(--ease-silk), box-shadow .25s ease;
+  transition: opacity .7s ease, transform .5s var(--ease-silk);
 }
-#btn-tekan.show{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
-#btn-tekan:hover{ transform:translateX(-50%) translateY(-3px); box-shadow: 0 18px 36px rgba(173,98,116,0.48); }
+.nb-closing.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
+.nb-closing-msg{
+  font-family:'Caveat', cursive;
+  font-size: 17px;
+  color: var(--plum-soft);
+}
+.nb-closing-label{
+  font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+  color: var(--plum-soft); margin-top:4px;
+}
+.nb-closing-arrow{
+  font-size:16px; color: var(--rose-dark);
+  animation: nbArrowBounce 1.4s ease-in-out infinite;
+}
+@keyframes nbArrowBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(5px); } }
+
+.nb-red-btn{
+  position:relative;
+  width:64px; height:64px;
+  border-radius:50%;
+  margin-top:2px;
+  border: 3px solid #fff;
+  background: radial-gradient(circle at 33% 28%, #FF7A7A, #D62828 72%);
+  box-shadow: 0 0 0 4px rgba(214,40,40,0.22), 0 12px 26px rgba(214,40,40,0.45), inset 0 -4px 8px rgba(0,0,0,0.28);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.nb-red-btn::before{
+  content:"";
+  position:absolute; inset:9px;
+  border-radius:50%;
+  border: 1.5px solid rgba(255,255,255,0.55);
+  pointer-events:none;
+}
+.nb-red-btn::after{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:50%;
+  box-shadow: 0 0 0 0 rgba(214,40,40,0.45);
+  animation: nbRedPulse 2.2s ease-out infinite;
+  pointer-events:none;
+}
+@keyframes nbRedPulse{
+  0%{ box-shadow: 0 0 0 0 rgba(214,40,40,0.45); }
+  70%{ box-shadow: 0 0 0 18px rgba(214,40,40,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(214,40,40,0); }
+}
+.nb-red-btn:hover{ transform: scale(1.06); }
+.nb-red-btn:active{ transform: scale(.92); box-shadow: 0 0 0 4px rgba(214,40,40,0.28), 0 5px 12px rgba(214,40,40,0.5), inset 0 -2px 6px rgba(0,0,0,0.32); }
+.nb-red-btn:focus-visible{ outline:2.5px solid #D62828; outline-offset:4px; }
+
+/* ---------- Overlay countdown dramatis 3-2-1 ---------- */
+.nb-countdown-overlay{
+  position:fixed; inset:0; z-index:90;
+  background: radial-gradient(circle at 50% 50%, rgba(58,37,48,0.78), rgba(18,10,13,0.94));
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition: opacity .25s ease;
+}
+.nb-countdown-overlay.show{ opacity:1; pointer-events:auto; }
+.nb-countdown-number{
+  font-family:'Cormorant Garamond', serif; font-weight:600;
+  font-size: clamp(90px, 26vw, 180px);
+  color:#fff;
+  text-shadow: 0 0 46px rgba(255,143,177,0.65), 0 12px 30px rgba(0,0,0,0.55);
+}
+.nb-countdown-number.nb-pulse{ animation: nbCountPulse .68s cubic-bezier(.2,.9,.25,1.25); }
+@keyframes nbCountPulse{
+  0%{ transform: scale(.3); opacity:0; }
+  35%{ transform: scale(1.16); opacity:1; }
+  55%{ transform: scale(1) rotate(-2deg); }
+  70%{ transform: scale(1.04) rotate(2deg); }
+  100%{ transform: scale(1); opacity:1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .nb-countdown-number.nb-pulse{ animation: none; }
+  .nb-red-btn::after{ animation: none; }
+}
 
 /* ---------- 3. PROFIL — TikTok-style di dalam mockup iPhone ---------- */
 #screen-profile{
@@ -693,9 +836,9 @@ button{ font-family:inherit; cursor:pointer; }
 .mp-sheet-btn.mp-sheet-play{ width:66px; height:66px; background: linear-gradient(135deg, var(--rose-dark), #8F4A5C); box-shadow: 0 12px 26px rgba(173,98,116,0.4); }
 .mp-sheet-btn.mp-sheet-play svg{ width:22px; height:22px; fill:#fff; }
 
-/* ---------- GARIS SCRAPBOOK — hanya di bawah teks halaman buku ---------- */
-.page-text{ position:relative; padding-bottom:24px; }
-.page-text::after{
+/* ---------- GARIS SCRAPBOOK — squiggle di bawah quote besar ---------- */
+.sb-quote-big .sb-text{ position:relative; padding-bottom:24px; }
+.sb-quote-big .sb-text::after{
   content:"";
   display:block;
   position:absolute;
@@ -1034,5 +1177,5 @@ button{ font-family:inherit; cursor:pointer; }
   #music-player{ width:min(380px, 92vw); }
 }
 @media (min-width:1280px){
-  .page-text{ font-size: clamp(22px, 1.6vw, 30px); }
+  .sb-text{ font-size: clamp(20px, 1.5vw, 25px); }
 }

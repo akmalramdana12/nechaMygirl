@@ -73,6 +73,31 @@ const MC_QUESTION_LABELS = {
   const toast = document.getElementById('mc-toast');
   const mcLoading = document.getElementById('mc-loading');
   const mcLoadingBar = document.getElementById('mc-loading-bar-fill');
+  const progressEl = document.getElementById('mc-progress');
+  const progressCurrentEl = document.getElementById('mc-progress-current');
+  const progressTotalEl = document.getElementById('mc-progress-total');
+  const dialogueBox = document.getElementById('mc-dialogue-box');
+
+  // total pertanyaan & nomor urut pertanyaan saat ini, dihitung langsung dari
+  // MC_TURNS (tidak mengubah/menduplikasi data percakapan itu sendiri)
+  const MC_TOTAL_QUESTIONS = MC_TURNS.filter((t) => t.question).length;
+  function questionNumberFor(turnIndex) {
+    let count = 0;
+    for (let i = 0; i <= turnIndex; i++) {
+      if (MC_TURNS[i].question) count++;
+    }
+    return count;
+  }
+  function updateProgress(turn) {
+    if (!progressEl) return;
+    if (turn.question) {
+      progressCurrentEl.textContent = String(questionNumberFor(idx)).padStart(2, '0');
+      progressTotalEl.textContent = String(MC_TOTAL_QUESTIONS).padStart(2, '0');
+      progressEl.hidden = false;
+    } else {
+      progressEl.hidden = true;
+    }
+  }
 
   let idx = 0;
   let answers = {};
@@ -128,6 +153,17 @@ const MC_QUESTION_LABELS = {
     setTimeout(() => toast.classList.remove('show'), 2600);
   }
 
+  // reaksi kecil monster (tap saat tombol ditekan, happy saat jawaban terkirim)
+  function bounceMonster(reactionClass) {
+    monsterEl.classList.remove('mc-monster--tap', 'mc-monster--happy');
+    void monsterEl.offsetWidth;
+    monsterEl.classList.add(reactionClass);
+    monsterEl.addEventListener('animationend', function cleanup() {
+      monsterEl.classList.remove(reactionClass);
+      monsterEl.removeEventListener('animationend', cleanup);
+    });
+  }
+
   function clearButtons() { buttonsWrap.innerHTML = ''; }
 
   function makeButton(label, extraClass) {
@@ -158,6 +194,7 @@ const MC_QUESTION_LABELS = {
       }
       i++;
       textEl.textContent = str.slice(0, i);
+      textEl.appendChild(cursor);
       if (i % 2 === 0) playTypeTick();
       if (i < str.length) {
         typeTimer = setTimeout(step, MC_TYPE_SPEED);
@@ -168,6 +205,7 @@ const MC_QUESTION_LABELS = {
     function finish() {
       typing = false;
       monsterEl.classList.remove('mc-talking');
+      cursor.remove();
       if (onDone) onDone();
     }
     step();
@@ -187,6 +225,13 @@ const MC_QUESTION_LABELS = {
     clearButtons();
     answerWrap.hidden = true;
 
+    // sentuhan transisi "babak baru" tiap kali giliran obrolan berganti
+    if (dialogueBox) {
+      dialogueBox.classList.remove('mc-dialogue-box--pulse');
+      void dialogueBox.offsetWidth;
+      dialogueBox.classList.add('mc-dialogue-box--pulse');
+    }
+
     // indikator "sedang mengetik" sebentar sebelum teks muncul
     typingDots.hidden = false;
     setTimeout(() => {
@@ -196,6 +241,7 @@ const MC_QUESTION_LABELS = {
   }
 
   function onTypedDone(turn) {
+    updateProgress(turn);
     if (turn.question) {
       answerWrap.hidden = false;
       answerInput.value = answers[turn.key] || '';
@@ -211,6 +257,7 @@ const MC_QUESTION_LABELS = {
       nextBtn.addEventListener('click', (e) => {
         answers[turn.key] = answerInput.value.trim();
         spawnParticles(e.currentTarget);
+        bounceMonster('mc-monster--tap');
         render(idx + 1);
       });
       buttonsWrap.appendChild(nextBtn);
@@ -225,6 +272,7 @@ const MC_QUESTION_LABELS = {
         const btn = makeButton(btnDef.label);
         btn.addEventListener('click', (e) => {
           spawnParticles(e.currentTarget);
+          bounceMonster('mc-monster--tap');
           handleAction(btnDef.action);
         });
         buttonsWrap.appendChild(btn);
@@ -262,6 +310,7 @@ const MC_QUESTION_LABELS = {
       if (!check.some((e) => e.id === entry.id)) {
         throw new Error('Verifikasi localStorage gagal — data tidak tersimpan.');
       }
+      bounceMonster('mc-monster--happy');
       showToast('✅ Jawabanmu berhasil dikirim!');
     } catch (e) {
       console.error('[monster-chat] Gagal menyimpan jawaban:', e);

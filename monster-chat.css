@@ -1,37 +1,123 @@
-/* ============================================================
-   HALAMAN BARU: "Kenalan Dulu, Yuk!" — monster lucu + 10 pertanyaan.
-   File terpisah, tidak menyentuh styles.css yang lama sama sekali.
-   ============================================================ */
+/* ============================================================================
+   HALAMAN "KENALAN DULU, YUK!" — Monster Chat
+   ----------------------------------------------------------------------------
+   Visual system sepenuhnya mandiri (namespace mc-* / --mc-*), TIDAK bergantung
+   pada styles.css global sama sekali. Halaman lain tidak tersentuh oleh file
+   ini. Semua ID/class yang dipakai monster-chat.js dipertahankan persis:
+   screen-monster, mc-monster, mc-dialogue-box, mc-typing-dots, mc-text,
+   mc-answer-wrap, mc-answer-input, mc-buttons, mc-toast, mc-loading,
+   mc-loading-bar-fill, mc-btn, mc-btn-ghost, mc-particle, mc-cursor,
+   mc-progress + turunan progress, mc-monster--tap, mc-monster--happy.
+   ============================================================================ */
 
 #screen-monster{
-  background:
-    radial-gradient(circle at 14% 10%, rgba(205,165,94,0.16), transparent 46%),
-    radial-gradient(circle at 88% 90%, rgba(217,152,166,0.2), transparent 52%),
-    radial-gradient(circle at 50% 50%, rgba(205,165,94,0.05), transparent 60%),
-    var(--cream);
+  /* ---------------- Design tokens (isolated, tidak dari styles.css) --------------- */
+  --mc-bg:            #FBF3EA;
+  --mc-bg-deep:       #F3E1E7;
+  --mc-surface:       #FFFDF8;
+  --mc-surface-soft:  #FFF6E8;
+  --mc-primary:       #AD6274;
+  --mc-primary-dark:  #8F4A5C;
+  --mc-accent:        #CDA55E;
+  --mc-accent-soft:   #E7CE9C;
+  --mc-text:          #3A2530;
+  --mc-text-soft:     #6D5058;
+  --mc-border:        rgba(58,37,48,0.12);
+  --mc-glow:          rgba(205,165,94,0.38);
+  --mc-glow-rose:     rgba(216,141,163,0.35);
+
+  --mc-shadow-sm: 0 4px 14px rgba(58,37,48,0.10);
+  --mc-shadow-md: 0 16px 34px rgba(58,37,48,0.16);
+  --mc-shadow-lg: 0 30px 64px rgba(58,37,48,0.22);
+  --mc-radius-lg: 26px;
+  --mc-radius-md: 16px;
+  --mc-ease: cubic-bezier(.22,.9,.24,1.06);
+  --mc-ease-soft: cubic-bezier(.3,.9,.3,1);
+
+  position: relative;
+  isolation: isolate;
+  background: var(--mc-bg);
   flex-direction: column;
   gap: clamp(10px, 3vh, 22px);
   overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: max(env(safe-area-inset-top), 0px);
+  padding-bottom: max(env(safe-area-inset-bottom), 14px);
+  padding-left: max(env(safe-area-inset-left), 14px);
+  padding-right: max(env(safe-area-inset-right), 14px);
+  color: var(--mc-text);
 }
 
-/* ---------- Dekorasi ambient (bintang/sparkle melayang) ---------- */
-.mc-deco{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+/* ---------------------------------------------------------------------------
+   BACKGROUND SYSTEM — layered light, grain, vignette, ambient blobs, sparkles
+   --------------------------------------------------------------------------- */
+#screen-monster::before{
+  /* cinematic light + depth layers */
+  content:"";
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(255,255,255,0.65), transparent 40%),
+    radial-gradient(circle at 82% 14%, var(--mc-glow-rose), transparent 46%),
+    radial-gradient(circle at 12% 88%, var(--mc-glow), transparent 48%),
+    radial-gradient(circle at 88% 92%, rgba(216,141,163,0.22), transparent 50%),
+    linear-gradient(175deg, var(--mc-bg) 0%, var(--mc-bg-deep) 100%);
+  animation: mcLightDrift 14s ease-in-out infinite;
+}
+#screen-monster::after{
+  /* subtle vignette + paper grain, drawn once, extremely light footprint */
+  content:"";
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 55%, rgba(58,37,48,0.07) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+@keyframes mcLightDrift{
+  0%,100%{ opacity:1; }
+  50%{ opacity:.86; }
+}
+
+.mc-bg-blobs{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.mc-blob{
+  position:absolute; border-radius:50%;
+  filter: blur(38px);
+  opacity:.55;
+  animation: mcBlobDrift 16s ease-in-out infinite;
+}
+.mc-blob-1{ width:260px; height:260px; top:-80px; left:-60px; background: radial-gradient(circle, var(--mc-glow-rose), transparent 70%); }
+.mc-blob-2{ width:220px; height:220px; bottom:-70px; right:-50px; background: radial-gradient(circle, var(--mc-glow), transparent 70%); animation-duration: 19s; animation-delay: -4s; }
+.mc-blob-3{ width:180px; height:180px; top:38%; right:-40px; background: radial-gradient(circle, rgba(255,255,255,0.5), transparent 70%); animation-duration: 13s; animation-delay: -8s; }
+@keyframes mcBlobDrift{
+  0%,100%{ transform: translate(0,0) scale(1); }
+  50%{ transform: translate(14px,-16px) scale(1.08); }
+}
+
+.mc-deco{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
 .mc-deco-item{
   position:absolute;
-  font-size: clamp(16px, 3vw, 22px);
-  opacity:.55;
+  font-size: clamp(14px, 2.6vw, 20px);
+  opacity:.5;
+  filter: drop-shadow(0 2px 5px rgba(58,37,48,0.14));
   animation: mcDecoFloat 6s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(58,37,48,0.15));
 }
-.mc-deco-1{ top:10%; left:8%; animation-duration:5.5s; }
-.mc-deco-2{ top:20%; right:10%; animation-duration:7s; animation-delay:.6s; }
-.mc-deco-3{ bottom:16%; left:12%; animation-duration:6.4s; animation-delay:1.2s; }
-.mc-deco-4{ bottom:24%; right:14%; animation-duration:5.8s; animation-delay:.3s; }
+.mc-deco-1{ top:9%;  left:7%;  animation-duration:5.6s; }
+.mc-deco-2{ top:18%; right:9%; animation-duration:7.1s; animation-delay:.6s; }
+.mc-deco-3{ bottom:15%; left:11%; animation-duration:6.3s; animation-delay:1.2s; }
+.mc-deco-4{ bottom:22%; right:13%; animation-duration:5.9s; animation-delay:.3s; }
+.mc-deco-5{ top:46%; left:4%; animation-duration:6.8s; animation-delay:1.6s; font-size: clamp(11px, 2vw, 15px); opacity:.35; }
 @keyframes mcDecoFloat{
-  0%,100%{ transform: translateY(0) rotate(0deg); opacity:.4; }
-  50%{ transform: translateY(-16px) rotate(12deg); opacity:.75; }
+  0%,100%{ transform: translateY(0) rotate(0deg); opacity:.35; }
+  50%{ transform: translateY(-15px) rotate(10deg); opacity:.7; }
 }
 
+@media (prefers-reduced-motion: reduce){
+  #screen-monster::before{ animation:none; }
+  .mc-blob, .mc-deco-item{ animation:none; }
+}
+
+/* ---------------------------------------------------------------------------
+   LAYOUT WRAP + STATUS LABEL
+   --------------------------------------------------------------------------- */
 .mc-wrap{
   width: 100%;
   max-width: 480px;
@@ -46,117 +132,166 @@
 
 .mc-eyebrow{
   display:inline-flex; align-items:center; gap:6px;
-  background: var(--paper);
-  border: 1.5px solid rgba(205,165,94,0.4);
-  color: var(--plum);
+  background: var(--mc-surface);
+  border: 1.5px solid var(--mc-accent-soft);
+  color: var(--mc-text);
   padding: 7px 16px;
   border-radius: 999px;
   font-family:'Jost', sans-serif;
   font-weight:600;
-  font-size: 12.5px;
-  letter-spacing:.2px;
-  box-shadow: var(--shadow-1);
+  font-size: 12px;
+  letter-spacing:.3px;
+  box-shadow: var(--mc-shadow-sm);
   margin-bottom: 2px;
-  animation: mcFieldIn .5s cubic-bezier(.3,1,.4,1) both;
+  animation: mcFieldIn .5s var(--mc-ease) both;
 }
 
-/* ---------- MONSTER ---------- */
+/* ---------------------------------------------------------------------------
+   MONSTER — interactive companion
+   --------------------------------------------------------------------------- */
 .mc-monster-stage{
   position:relative;
-  width: clamp(120px, 34vw, 170px);
-  height: clamp(120px, 34vw, 170px);
-  animation: mcPopIn .6s cubic-bezier(.3,1.2,.4,1) both;
+  width: clamp(118px, 32vw, 168px);
+  height: clamp(118px, 32vw, 168px);
+  animation: mcPopIn .6s var(--mc-ease) both;
 }
 .mc-monster-glow{
-  position:absolute; inset: -14%;
+  position:absolute; inset: -16%;
   border-radius:50%;
-  background: radial-gradient(circle, rgba(205,165,94,0.35), rgba(217,152,166,0.15) 55%, transparent 75%);
+  background: radial-gradient(circle, var(--mc-glow), var(--mc-glow-rose) 55%, transparent 76%);
   animation: mcGlowPulse 3.2s ease-in-out infinite;
   z-index:0;
 }
 @keyframes mcGlowPulse{
-  0%,100%{ transform: scale(.94); opacity:.7; }
-  50%{ transform: scale(1.06); opacity:1; }
+  0%,100%{ transform: scale(.94); opacity:.65; }
+  50%{ transform: scale(1.08); opacity:1; }
 }
 @keyframes mcPopIn{
-  0%{ opacity:0; transform: translateY(24px) scale(.7); }
+  0%{ opacity:0; transform: translateY(26px) scale(.68); }
   100%{ opacity:1; transform: translateY(0) scale(1); }
 }
 .mc-monster{
   position:relative; z-index:1;
   width:100%; height:100%;
-  animation: mcBob 3.2s ease-in-out infinite;
-  filter: drop-shadow(0 14px 18px rgba(58,37,48,0.22));
+  animation: mcBreathe 3.4s ease-in-out infinite;
+  filter: drop-shadow(0 16px 20px rgba(58,37,48,0.22));
+  transition: filter .2s ease;
 }
-@keyframes mcBob{
-  0%,100%{ transform: translateY(0) rotate(-1.5deg); }
-  50%{ transform: translateY(-9px) rotate(1.5deg); }
+@keyframes mcBreathe{
+  0%,100%{ transform: translateY(0) rotate(-1.4deg) scale(1); }
+  50%{ transform: translateY(-9px) rotate(1.4deg) scale(1.015); }
 }
-.mc-monster.mc-talking{ animation: mcTalk .5s ease-in-out infinite; }
+.mc-monster.mc-talking{ animation: mcTalk .48s ease-in-out infinite; }
 @keyframes mcTalk{
-  0%,100%{ transform: translateY(-3px) scale(1,1); }
-  50%{ transform: translateY(-3px) scale(1.03,0.97); }
+  0%,100%{ transform: translateY(-4px) scale(1,1); }
+  50%{ transform: translateY(-4px) scale(1.035,0.965); }
 }
+/* reaksi kecil saat tombol ditekan */
+.mc-monster.mc-monster--tap{ animation: mcTap .38s var(--mc-ease); }
+@keyframes mcTap{
+  0%{ transform: scale(1) rotate(0deg); }
+  35%{ transform: scale(1.08) rotate(-3deg); }
+  70%{ transform: scale(.97) rotate(2deg); }
+  100%{ transform: scale(1) rotate(0deg); }
+}
+/* reaksi ceria saat jawaban berhasil terkirim */
+.mc-monster.mc-monster--happy{ animation: mcHappy .9s var(--mc-ease); }
+@keyframes mcHappy{
+  0%{ transform: translateY(0) scale(1) rotate(0deg); }
+  25%{ transform: translateY(-18px) scale(1.1) rotate(-4deg); }
+  50%{ transform: translateY(0) scale(1.04) rotate(4deg); }
+  75%{ transform: translateY(-8px) scale(1.06) rotate(-2deg); }
+  100%{ transform: translateY(0) scale(1) rotate(0deg); }
+}
+.mc-monster-stage:has(.mc-monster--happy) .mc-monster-glow{ animation: mcGlowBurst .9s var(--mc-ease); }
+@keyframes mcGlowBurst{
+  0%{ transform: scale(.94); opacity:.65; }
+  40%{ transform: scale(1.3); opacity:1; }
+  100%{ transform: scale(.94); opacity:.65; }
+}
+
 .mc-shadow{ fill: rgba(58,37,48,0.16); }
 .mc-antenna-l, .mc-antenna-r{ transform-origin: 100px 46px; animation: mcAntenna 2.6s ease-in-out infinite; }
 .mc-antenna-r{ animation-delay:.3s; }
 @keyframes mcAntenna{ 0%,100%{ transform: rotate(0deg);} 50%{ transform: rotate(4deg);} }
-.mc-eye-l, .mc-eye-r{ animation: mcBlink 4.2s ease-in-out infinite; transform-origin: center; }
+.mc-eye-l, .mc-eye-r{ animation: mcBlink 4.4s ease-in-out infinite; transform-origin: center; }
 .mc-eye-r{ animation-delay: .08s; }
 @keyframes mcBlink{ 0%,92%,100%{ transform: scaleY(1);} 96%{ transform: scaleY(0.12);} }
 .mc-mouth{ transition: d .2s ease; }
 .mc-monster.mc-talking .mc-mouth{ animation: mcMouthTalk .3s ease-in-out infinite; }
-@keyframes mcMouthTalk{
-  0%,100%{ transform: scaleY(1); }
-  50%{ transform: scaleY(1.5); }
-}
+@keyframes mcMouthTalk{ 0%,100%{ transform: scaleY(1); } 50%{ transform: scaleY(1.5); } }
 .mc-spot{ animation: mcTwinkle 2.4s ease-in-out infinite; }
 .mc-spot:nth-child(2){ animation-delay: 1s; }
 @keyframes mcTwinkle{ 0%,100%{ opacity:.15;} 50%{ opacity:.5;} }
 
-/* ---------- DIALOGUE BOX (gaya kotak percakapan game) ---------- */
+@media (prefers-reduced-motion: reduce){
+  .mc-monster-stage{ animation:none; }
+  .mc-monster-glow{ animation:none; }
+  .mc-monster{ animation:none; }
+  .mc-monster.mc-talking{ animation:none; }
+  .mc-monster.mc-monster--tap, .mc-monster.mc-monster--happy{ animation:none; }
+  .mc-antenna-l, .mc-antenna-r, .mc-eye-l, .mc-eye-r, .mc-spot{ animation:none; }
+}
+
+/* ---------------------------------------------------------------------------
+   DIALOGUE PANEL — premium story dialogue
+   --------------------------------------------------------------------------- */
 .mc-dialogue-box{
   width:100%;
-  background: linear-gradient(180deg, var(--paper), #FFF9F0);
-  border: 3px solid var(--gold);
-  border-radius: 22px;
-  box-shadow: var(--shadow-2), inset 0 0 0 4px rgba(255,255,255,0.6);
-  padding: clamp(18px, 4vw, 26px) clamp(18px, 5vw, 30px);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.6), transparent 40%),
+    linear-gradient(180deg, var(--mc-surface), var(--mc-surface-soft));
+  border: 1.5px solid var(--mc-border);
+  border-radius: var(--mc-radius-lg);
+  box-shadow: var(--mc-shadow-md), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 0 0 1px rgba(255,255,255,0.35);
+  padding: clamp(20px, 4.4vw, 28px) clamp(20px, 5.2vw, 32px);
   position: relative;
   min-height: 128px;
   display:flex;
   flex-direction: column;
   gap: 14px;
+  animation: mcPanelIn .55s var(--mc-ease) both;
+}
+@keyframes mcPanelIn{
+  0%{ opacity:0; transform: translateY(16px) scale(.98); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
+.mc-dialogue-box.mc-dialogue-box--pulse{ animation: mcPanelSettle .4s var(--mc-ease); }
+@keyframes mcPanelSettle{
+  0%{ transform: scale(.985); }
+  60%{ transform: scale(1.006); }
+  100%{ transform: scale(1); }
 }
 .mc-dialogue-box::before{
   content:"";
   position:absolute;
-  top:-13px; left: 42px;
+  top:-12px; left: 42px;
   width:22px; height:22px;
-  background: var(--paper);
-  border-left:3px solid var(--gold);
-  border-top:3px solid var(--gold);
+  background: var(--mc-surface);
+  border-left:1.5px solid var(--mc-border);
+  border-top:1.5px solid var(--mc-border);
   transform: rotate(45deg);
-  border-radius: 4px 0 0 0;
+  border-radius: 5px 0 0 0;
+  box-shadow: -2px -2px 4px rgba(255,255,255,0.5) inset;
 }
 .mc-nametag{
   position:absolute;
   top:-15px; right: 20px;
-  background: linear-gradient(135deg, var(--rose-dark), #8F4A5C);
+  background: linear-gradient(135deg, var(--mc-primary), var(--mc-primary-dark));
   color:#fff;
   font-family:'Jost', sans-serif;
   font-weight:600;
-  font-size: 11.5px;
-  letter-spacing:.3px;
+  font-size: 11px;
+  letter-spacing:.4px;
   padding: 5px 14px;
   border-radius: 999px;
-  box-shadow: 0 6px 14px rgba(173,98,116,0.35);
+  box-shadow: var(--mc-shadow-sm), inset 0 1px 0 rgba(255,255,255,0.35);
 }
 
 .mc-typing-dots{ display:flex; gap:6px; align-items:center; height:14px; }
 .mc-typing-dots span{
-  width:8px; height:8px; border-radius:50%;
-  background: var(--rose-dark);
+  width:7px; height:7px; border-radius:50%;
+  background: linear-gradient(135deg, var(--mc-primary), var(--mc-accent));
   opacity:.5;
   animation: mcDotBounce 1s ease-in-out infinite;
 }
@@ -166,25 +301,61 @@
 
 .mc-text{
   font-family: 'Slackey', 'Cormorant Garamond', cursive;
-  font-size: clamp(15px, 3.6vw, 19px);
-  line-height: 1.6;
-  color: var(--plum);
+  font-size: clamp(15.5px, 3.6vw, 19px);
+  line-height: 1.62;
+  color: var(--mc-text);
   white-space: pre-line;
   min-height: 1.6em;
 }
 .mc-text .mc-cursor{
   display:inline-block;
-  width: 2px; height: 1em;
-  background: var(--rose-dark);
+  width: 3px; height: 1em;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--mc-primary), var(--mc-accent));
   margin-left: 2px;
   vertical-align: -2px;
-  animation: mcCursorBlink .8s steps(1) infinite;
+  animation: mcCursorBlink .9s steps(1) infinite;
 }
 @keyframes mcCursorBlink{ 50%{ opacity:0; } }
+@media (prefers-reduced-motion: reduce){
+  .mc-dialogue-box{ animation:none; }
+  .mc-dialogue-box.mc-dialogue-box--pulse{ animation:none; }
+  .mc-typing-dots span{ animation:none; opacity:.7; }
+  .mc-text .mc-cursor{ animation:none; opacity:1; }
+}
 
-/* ---------- KOLOM JAWABAN (hanya untuk 💌) ---------- */
+/* ---------------------------------------------------------------------------
+   PROGRESS INDICATOR — "Pertanyaan 03 / 10"
+   --------------------------------------------------------------------------- */
+.mc-progress{
+  display:flex; align-items:center; gap:8px;
+  font-family:'Jost', sans-serif;
+  animation: mcFieldIn .38s var(--mc-ease) both;
+}
+.mc-progress-label{
+  font-size: 10.5px; letter-spacing:1.4px; text-transform:uppercase;
+  color: var(--mc-text-soft); opacity:.75;
+}
+.mc-progress-count{
+  font-size: 12.5px; font-weight:700; letter-spacing:.3px;
+  color: var(--mc-primary-dark);
+  background: var(--mc-surface-soft);
+  border: 1px solid var(--mc-border);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.mc-progress-sep{ margin:0 2px; opacity:.5; }
+
+/* ---------------------------------------------------------------------------
+   ANSWER INPUT
+   --------------------------------------------------------------------------- */
+.mc-sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
 .mc-answer-wrap{
-  animation: mcFieldIn .38s cubic-bezier(.3,1,.4,1) both;
+  animation: mcFieldIn .4s var(--mc-ease) both;
+  animation-delay: .07s;
 }
 @keyframes mcFieldIn{
   0%{ opacity:0; transform: translateY(10px); }
@@ -193,113 +364,153 @@
 .mc-answer-input{
   width:100%;
   font-family:'Jost', sans-serif;
-  font-size: 14.5px;
+  font-size: 15px;
   padding: 13px 16px;
   border-radius: 14px;
-  border: 2px solid var(--line);
-  background: var(--cream);
-  color: var(--plum);
-  transition: border-color .2s ease, box-shadow .2s ease;
+  border: 1.5px solid var(--mc-border);
+  background: var(--mc-surface-soft);
+  color: var(--mc-text);
+  box-shadow: inset 0 1px 2px rgba(58,37,48,0.04);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s var(--mc-ease), background .2s ease;
 }
-.mc-answer-input::placeholder{ color: var(--plum-soft); opacity:.55; }
+.mc-answer-input::placeholder{ color: var(--mc-text-soft); opacity:.55; }
+.mc-answer-input:hover{ border-color: rgba(173,98,116,0.4); }
 .mc-answer-input:focus{
   outline:none;
-  border-color: var(--rose-dark);
-  box-shadow: 0 0 0 4px rgba(173,98,116,0.14);
+  border-color: var(--mc-primary);
+  background: var(--mc-surface);
+  box-shadow: 0 0 0 4px rgba(173,98,116,0.14), var(--mc-shadow-sm);
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: reduce){
+  .mc-answer-wrap{ animation:none; }
+  .mc-answer-input{ transition: border-color .2s ease, box-shadow .2s ease; }
+  .mc-answer-input:focus{ transform:none; }
 }
 
-/* ---------- TOMBOL (◻️ & navigasi Next/Before) ---------- */
+/* ---------------------------------------------------------------------------
+   BUTTONS — premium tactile
+   --------------------------------------------------------------------------- */
 .mc-buttons{
   display:flex;
   flex-wrap: wrap;
   gap: 10px;
-  animation: mcFieldIn .4s cubic-bezier(.3,1,.4,1) both;
+  animation: mcFieldIn .42s var(--mc-ease) both;
+  animation-delay: .14s;
 }
 .mc-btn{
   position: relative;
   overflow: hidden;
   font-family:'Jost', sans-serif;
-  font-weight:500;
+  font-weight:600;
   font-size: 13.5px;
   letter-spacing:.2px;
   padding: 12px 22px;
   border-radius: 30px;
   border: none;
   color: #fff;
-  background: linear-gradient(135deg, var(--rose-dark), #8F4A5C);
-  box-shadow: 0 10px 22px rgba(173,98,116,0.32);
-  transition: transform .18s cubic-bezier(.3,1.4,.4,1), box-shadow .2s ease, opacity .2s ease;
+  background: linear-gradient(135deg, var(--mc-primary), var(--mc-primary-dark));
+  box-shadow: var(--mc-shadow-sm), 0 1px 0 rgba(255,255,255,0.25) inset;
+  transition: transform .18s var(--mc-ease), box-shadow .2s ease, opacity .2s ease, filter .15s ease;
+  min-height: 44px;
 }
 .mc-btn::after{
   content:"";
   position:absolute; top:0; left:-60%;
   width:40%; height:100%;
-  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.45), transparent);
   transform: skewX(-20deg);
   transition: left .5s ease;
 }
 .mc-btn:hover::after{ left:120%; }
 .mc-btn.mc-btn-ghost::after{ display:none; }
-.mc-btn:hover{ transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 26px rgba(173,98,116,0.4); }
-.mc-btn:active{ transform: translateY(0) scale(.97); }
+.mc-btn:hover{ transform: translateY(-3px) scale(1.03); box-shadow: var(--mc-shadow-md); filter: brightness(1.03); }
+.mc-btn:active{ transform: translateY(0) scale(.96); box-shadow: var(--mc-shadow-sm); filter: brightness(.98); }
+.mc-btn:focus-visible{ outline: 2.5px solid var(--mc-primary-dark); outline-offset: 3px; }
 .mc-btn.mc-btn-ghost{
-  background: var(--paper);
-  color: var(--plum-soft);
-  border: 1.5px solid var(--line);
+  background: var(--mc-surface);
+  color: var(--mc-text-soft);
+  border: 1.5px solid var(--mc-border);
   box-shadow: none;
 }
-.mc-btn.mc-btn-ghost:hover{ border-color: var(--rose-dark); color: var(--rose-dark); }
+.mc-btn.mc-btn-ghost:hover{ border-color: var(--mc-primary); color: var(--mc-primary); box-shadow: var(--mc-shadow-sm); }
 .mc-btn:disabled{
   opacity:.4;
   cursor:not-allowed;
   transform:none !important;
   box-shadow:none !important;
+  filter:none !important;
+}
+@media (prefers-reduced-motion: reduce){
+  .mc-buttons{ animation:none; }
+  .mc-btn{ transition: box-shadow .2s ease, opacity .2s ease; }
+  .mc-btn:hover, .mc-btn:active{ transform:none; }
+  .mc-btn::after{ display:none; }
 }
 
-/* partikel kecil saat tombol diketuk */
+/* partikel kecil saat tombol diketuk — dot bercahaya + sedikit sparkle */
 .mc-particle{
   position: fixed;
   z-index: 80;
   pointer-events: none;
-  font-size: 14px;
+  font-size: 13px;
   will-change: transform, opacity;
   animation: mcParticleOut .7s ease-out forwards;
+  color: var(--mc-primary);
+  text-shadow: 0 0 8px var(--mc-glow);
 }
 @keyframes mcParticleOut{
   0%{ transform: translate(-50%,-50%) scale(.4); opacity:1; }
   100%{ transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) scale(1); opacity:0; }
 }
 
-/* ---------- NOTIFIKASI "TERKIRIM" ---------- */
+/* ---------------------------------------------------------------------------
+   TOAST — notifikasi terkirim
+   --------------------------------------------------------------------------- */
 .mc-toast{
   position: fixed;
-  left: 50%; bottom: 30px;
+  left: 50%; bottom: max(env(safe-area-inset-bottom), 20px);
   transform: translateX(-50%) translateY(20px);
-  background: var(--plum);
+  background: linear-gradient(135deg, var(--mc-text), #2B1A20);
   color: #FBF0EA;
   font-family:'Jost', sans-serif;
   font-size: 13.5px;
   font-weight: 500;
   padding: 13px 22px;
   border-radius: 30px;
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--mc-shadow-md);
   opacity: 0;
   pointer-events: none;
-  transition: opacity .35s ease, transform .35s cubic-bezier(.3,1.2,.4,1);
+  transition: opacity .35s ease, transform .35s var(--mc-ease);
   z-index: 90;
+  max-width: 90vw;
+  text-align:center;
 }
 .mc-toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+@media (prefers-reduced-motion: reduce){
+  .mc-toast{ transition: opacity .2s ease; }
+  .mc-toast.show{ transform: translateX(-50%); }
+}
 
-/* loading dipinjam dari .photo-loading milik styles.css, id berbeda supaya
-   tidak bentrok dengan loading di halaman photoshoot */
+/* loading dipinjam dari .photo-loading milik styles.css (dibiarkan apa
+   adanya — dipakai bersama halaman photoshoot, sengaja tidak diubah supaya
+   halaman lain tidak terpengaruh). */
 
-/* ---------- RESPONSIVE ---------- */
+/* ---------------------------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------------------------- */
 @media (max-width:380px){
-  .mc-dialogue-box{ padding: 16px 16px; }
+  .mc-dialogue-box{ padding: 17px 17px; }
   .mc-btn{ padding: 11px 18px; font-size:13px; }
+  .mc-monster-stage{ width: clamp(96px, 30vw, 128px); height: clamp(96px, 30vw, 128px); }
+}
+@media (max-height: 620px){
+  .mc-monster-stage{ width: clamp(84px, 22vw, 118px); height: clamp(84px, 22vw, 118px); }
+  .mc-wrap{ gap: 8px; }
 }
 @media (min-width:900px){
-  .mc-wrap{ max-width: 520px; }
-  .mc-monster-stage{ width:190px; height:190px; }
-  .mc-dialogue-box{ padding: 28px 34px; }
+  .mc-wrap{ max-width: 540px; }
+  .mc-monster-stage{ width:196px; height:196px; }
+  .mc-dialogue-box{ padding: 30px 36px; }
+  .mc-text{ font-size: clamp(17px, 1.6vw, 21px); }
 }

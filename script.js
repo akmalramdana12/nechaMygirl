@@ -103,23 +103,149 @@ function addPageStickers(container, count){
   });
 }
 
-const pagesWrap = document.getElementById('pages-wrap');
-const dotsWrap = document.getElementById('dots');
-SLIDES.forEach((text, i) => {
-  const page = document.createElement('div');
-  page.className = 'page' + (i === 0 ? ' is-current' : ' hidden-page');
-  page.innerHTML =
-    `<div class="flip-shade"></div>` +
-    `<div class="page-counter">${i + 1}/${SLIDES.length}</div>` +
-    `<div class="page-text">${text}</div>` +
-    (i === SLIDES.length - 1 ? `<button id="btn-tekan">tekan aku</button>` : '');
-  pagesWrap.appendChild(page);
-  addPageStickers(page, 2 + Math.floor(Math.random() * 2)); // 2-3 stiker acak per halaman
+const scrapbook = document.getElementById('scrapbook');
 
-  const dot = document.createElement('div');
-  dot.className = 'dot' + (i === 0 ? ' active' : '');
-  dotsWrap.appendChild(dot);
-});
+// ==========================================================================
+// SCRAPBOOK RENDERER — satu halaman panjang yang di-scroll, BUKAN slide.
+// Setiap section punya komposisi berbeda (lihat "kind" masing-masing).
+// Teks asli di SLIDES (atas) tidak diubah sama sekali, cuma dipindahkan ke
+// struktur scrapbook baru. Foto pakai satu-satunya aset asli yang tersedia
+// di project: image/cantik.png
+// ==========================================================================
+const SCRAP_PHOTO = 'image/cantik.png';
+const SCRAP_DOODLES = ['♡', '✦', '✧', '❀'];
+
+function randomDoodle(){
+  return SCRAP_DOODLES[Math.floor(Math.random() * SCRAP_DOODLES.length)];
+}
+function doodleMarkup(pos){
+  return `<span class="sb-doodle" style="${pos}" aria-hidden="true">${randomDoodle()}</span>`;
+}
+function photoMarkup(rotate, extraClass){
+  return `<div class="sb-photo ${extraClass || ''}" style="--rot:${rotate};"><img src="${SCRAP_PHOTO}" alt=""></div>`;
+}
+
+function sbSection(kind, innerHTML){
+  const el = document.createElement('div');
+  el.className = 'sb-section';
+  el.dataset.kind = kind;
+  el.innerHTML = innerHTML;
+  return el;
+}
+
+function buildScrapbook(){
+  const sections = [];
+
+  // Bagian 1 — foto utama + tulisan kecil
+  sections.push(sbSection('photo-note', `
+    ${doodleMarkup('top:2%; right:8%;')}
+    <span class="sb-label">dari aku, untuk kamu</span>
+    ${photoMarkup('-5deg')}
+    <p class="sb-caption">sini, waktu itu ✨</p>
+    <p class="sb-text">${SLIDES[0]}</p>
+  `));
+
+  // Bagian 2 — beberapa foto polaroid saling overlap
+  sections.push(sbSection('polaroid-collage', `
+    <div class="sb-collage-stage">
+      ${photoMarkup('-8deg', 'p1')}
+      ${photoMarkup('6deg', 'p2')}
+      ${photoMarkup('-3deg', 'p3')}
+    </div>
+    <p class="sb-text">${SLIDES[1]}</p>
+  `));
+
+  // Bagian 3 — quote besar dengan dekorasi kecil
+  sections.push(sbSection('quote-big', `
+    <div class="sb-divider"></div>
+    <p class="sb-text">${SLIDES[2]}</p>
+    <div class="sb-divider bottom"></div>
+  `));
+
+  // Bagian 4 — foto besar + sticky note
+  sections.push(sbSection('photo-sticky', `
+    ${photoMarkup('4deg')}
+    <div class="sb-sticky-note">${SLIDES[3]}</div>
+  `));
+
+  // Bagian 5 — kolase beberapa foto kecil
+  sections.push(sbSection('collage-grid', `
+    <div class="sb-grid-stage">
+      ${photoMarkup('-6deg')}
+      ${photoMarkup('4deg')}
+      ${photoMarkup('-2deg')}
+    </div>
+    <span class="sb-caption">beberapa momen kecil</span>
+  `));
+
+  // Bagian 6 — teks/memori + foto kecil
+  sections.push(sbSection('memory-text', `
+    ${doodleMarkup('top:0; left:6%;')}
+    <p class="sb-text">${SLIDES[4]}</p>
+    ${photoMarkup('3deg')}
+    <span class="sb-memory-tag">memori kecil</span>
+  `));
+
+  // Bagian penutup — sama seperti sebelumnya: teks penutup + "Tekan Ini" + tombol merah
+  const closing = sbSection('closing', `
+    <p class="sb-text">segitu dulu untuk notebook kecil ini..<br>♡</p>
+    <div class="nb-closing" id="nb-closing">
+      <span class="nb-closing-msg">psst, satu hal lagi..</span>
+      <span class="nb-closing-label">Tekan Ini</span>
+      <span class="nb-closing-arrow" aria-hidden="true">↓</span>
+      <button id="btn-tekan" class="nb-red-btn" aria-label="Tekan untuk melanjutkan"></button>
+    </div>
+  `);
+  closing.classList.add('sb-closing');
+  sections.push(closing);
+
+  sections.forEach((s) => scrapbook.appendChild(s));
+  return sections;
+}
+
+const scrapSections = buildScrapbook();
+
+// ---- Muncul bertahap saat di-scroll (IntersectionObserver, ringan) ----
+const scrapObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-visible');
+      scrapObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+scrapSections.forEach((s) => scrapObserver.observe(s));
+
+// ---- Parallax kertas yang sangat halus saat scroll (mati jika prefers-reduced-motion) ----
+(function scrapbookParallax(){
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+  const screenBook = document.getElementById('screen-book');
+  let ticking = false;
+  function update(){
+    scrapbook.style.setProperty('--sb-parallax', (screenBook.scrollTop * 0.04) + 'px');
+    ticking = false;
+  }
+  screenBook.addEventListener('scroll', () => {
+    if (!ticking){
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+})();
+
+// ---- Tombol "Tekan Ini" baru muncul begitu bagian penutup terlihat ----
+const closingSection = scrapSections[scrapSections.length - 1];
+const closingObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const closingBox = document.getElementById('nb-closing');
+      if (closingBox) closingBox.classList.add('show');
+      closingObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.6 });
+closingObserver.observe(closingSection);
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -131,80 +257,59 @@ function showScreen(id){
   }
 }
 
-// ---- 1. Cover buka buku ----
+// ---- 1. Cover: ketuk untuk membuka -> tampilkan scrapbook ----
 const book = document.getElementById('book');
 window.__bookOpened = false;
 book.addEventListener('click', () => {
   book.classList.add('opening');
   window.__bookOpened = true;
-  if (window.__mpAutoplay) window.__mpAutoplay(); // musik otomatis diputar saat buku dibuka
-  if (window.__mpOpenSheet) window.__mpOpenSheet(); // popup Now Playing otomatis muncul saat buku dibuka
+  if (window.__mpAutoplay) window.__mpAutoplay(); // musik otomatis diputar saat cover dibuka
+  if (window.__mpOpenSheet) window.__mpOpenSheet(); // popup Now Playing otomatis muncul
   setTimeout(() => showScreen('screen-book'), 650);
 });
 
-// ---- 2. Navigasi slide dengan animasi membalik halaman ----
-let current = 0;
-let isFlipping = false;
-const pages = () => Array.from(document.querySelectorAll('.page'));
-const dots = () => Array.from(document.querySelectorAll('.dot'));
-const btnPrev = document.getElementById('btn-prev');
-const btnNext = document.getElementById('btn-next');
-
-function goTo(newIndex, direction){
-  if (isFlipping) return;
-  isFlipping = true;
-
-  const all = pages();
-  const from = all[current];
-  const to = all[newIndex];
-
-  // halaman tujuan langsung terlihat, diam, tepat di bawah halaman yang membalik
-  to.classList.remove('hidden-page');
-  to.style.transform = 'rotateY(0deg)';
-  to.classList.add('is-current');
-
-  from.classList.remove('is-current');
-  from.classList.add(direction === 'next' ? 'flip-out-next' : 'flip-out-prev');
-
-  dots().forEach((d, i) => d.classList.toggle('active', i === newIndex));
-  current = newIndex;
-  updateNavButtons();
-  if (current === SLIDES.length - 1) revealPressButton();
-
-  const finish = () => {
-    from.classList.remove('flip-out-next', 'flip-out-prev', 'is-current');
-    from.classList.add('hidden-page');
-    from.style.transform = ''; from.style.zIndex = '';
-    isFlipping = false;
-  };
-  from.addEventListener('animationend', finish, { once: true });
-  // jaring pengaman kalau animationend tidak terpicu (mis. reduced-motion)
-  setTimeout(() => { if (isFlipping) finish(); }, 900);
+// ---- Countdown dramatis 3-2-1 sebelum masuk ke halaman profil ----
+function runClosingCountdown(callback){
+  const overlay = document.getElementById('nb-countdown-overlay');
+  const numberEl = document.getElementById('nb-countdown-number');
+  if (!overlay || !numberEl) { callback(); return; }
+  const sequence = [
+    { text: '3', delay: 700 },
+    { text: '2', delay: 700 },
+    { text: '1', delay: 900 }
+  ];
+  overlay.classList.add('show');
+  let i = 0;
+  function step(){
+    if (i >= sequence.length){
+      overlay.classList.remove('show');
+      callback();
+      return;
+    }
+    numberEl.textContent = sequence[i].text;
+    numberEl.classList.remove('nb-pulse');
+    void numberEl.offsetWidth; // reset animasi supaya bisa diulang tiap angka
+    numberEl.classList.add('nb-pulse');
+    const delay = sequence[i].delay;
+    i++;
+    setTimeout(step, delay);
+  }
+  step();
 }
 
-function updateNavButtons(){
-  btnPrev.disabled = current === 0;
-  btnNext.disabled = current === SLIDES.length - 1;
-}
-updateNavButtons();
-
-btnNext.addEventListener('click', () => { if (current < SLIDES.length - 1) goTo(current + 1, 'next'); });
-btnPrev.addEventListener('click', () => { if (current > 0) goTo(current - 1, 'prev'); });
-
-// ---- Tombol "tekan aku" muncul begitu sampai di slide terakhir ----
-function revealPressButton(){
-  const btn = document.getElementById('btn-tekan');
-  if (btn) btn.classList.add('show');
-}
-
-// delegate click on the dynamically created "tekan aku" button
-pagesWrap.addEventListener('click', (e) => {
+// delegate click pada tombol merah "Tekan Ini" (muncul di bagian penutup scrapbook)
+// -> gunakan navigasi existing: countdown lalu showScreen('screen-profile')
+let closingLocked = false;
+scrapbook.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'btn-tekan') {
-    showScreen('screen-profile');
-    playProfileIntro();
+    if (closingLocked) return; // kunci supaya tidak bisa ditekan berkali-kali saat countdown
+    closingLocked = true;
+    runClosingCountdown(() => {
+      showScreen('screen-profile');
+      playProfileIntro();
+    });
   }
 });
-
 // ---- 3. Tombol "Tolak" menghindar ----
 const askActions = document.getElementById('ask-actions');
 const btnReject = document.getElementById('btn-reject');
